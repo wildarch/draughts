@@ -2,6 +2,7 @@ package nl.tue.s2id90.group19;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
@@ -28,15 +29,26 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     @Override public Move getMove(DraughtsState s) {
         Move bestMove = null;
-        bestValue = 0;
+        bestValue = MIN_VALUE;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
         try {
+            /*
             // compute bestMove and bestValue in a call to alphabeta
             bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth);
             
             // store the bestMove found uptill now
             // NB this is not done in case of an AIStoppedException in alphaBeat()
             bestMove  = node.getBestMove();
+            */
+            for(Move m : s.getMoves()) {
+                s.doMove(m);
+                int score = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth-1);
+                s.undoMove(m);
+                if(score > bestValue) {
+                    bestValue = score;
+                    bestMove = m;
+                }
+            }
             
             // print the results for debugging reasons
             System.err.format(
@@ -114,26 +126,55 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
      int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth)
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
-        DraughtsState state = node.getState();
-        // ToDo: write an alphabeta search to compute bestMove and value
-        Move bestMove = state.getMoves().get(0);
-        int value = 0;
-        node.setBestMove(bestMove);
-        return value;
+        if (depth == 0) {
+            return evaluate(node.getState());
+        }
+        
+        for (Move move : node.getState().getMoves()) {
+            node.getState().doMove(move);
+            beta = Integer.min(beta, alphaBetaMax(node, alpha, beta, depth-1));
+            if (beta <= alpha) {
+                return alpha;
+            }
+            node.getState().undoMove(move);
+        }
+        return beta;
      }
     
     int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth)
             throws AIStoppedException {
         if (stopped) { stopped = false; throw new AIStoppedException(); }
+        if (depth == 0) {
+            return evaluate(node.getState());
+        }
+        
+        for (Move move : node.getState().getMoves()) {
+            node.getState().doMove(move);
+            alpha = Integer.max(alpha, alphaBetaMin(node, alpha, beta, depth-1));
+            if (alpha >= beta) {
+                return beta;
+            }
+            node.getState().undoMove(move);
+        }
+        return alpha;
+        /*
         DraughtsState state = node.getState();
         // ToDo: write an alphabeta search to compute bestMove and value
         Move bestMove = state.getMoves().get(0);
         int value = 0;
         node.setBestMove(bestMove);
         return value;
+        */
     }
 
     /** A method that evaluates the given state. */
     // ToDo: write an appropriate evaluation function
-    int evaluate(DraughtsState state) { return 0; }
+    int evaluate(DraughtsState state) {
+        return (int) Arrays.stream(state.getPieces())
+                .skip(1)    // We don't use a[0]
+                .filter(
+                        (p) -> p == DraughtsState.WHITEKING || 
+                                p == DraughtsState.WHITEPIECE
+                ).count();
+    }
 }
