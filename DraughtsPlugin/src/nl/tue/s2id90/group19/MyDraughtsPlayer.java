@@ -2,7 +2,6 @@ package nl.tue.s2id90.group19;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
@@ -23,32 +22,41 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     private boolean stopped;
 
     public MyDraughtsPlayer(int maxSearchDepth) {
-        super("best.png"); // ToDo: replace with your own icon
+        super("smiley.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
+        System.out.println("Search depth: "+maxSearchDepth);
     }
     
     @Override public Move getMove(DraughtsState s) {
         Move bestMove = null;
-        bestValue = MIN_VALUE;
+        bestValue = -7777777;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
         try {
-            /*
             // compute bestMove and bestValue in a call to alphabeta
             bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth);
+            System.out.println("Value: "+bestValue);
             
             // store the bestMove found uptill now
             // NB this is not done in case of an AIStoppedException in alphaBeat()
             bestMove  = node.getBestMove();
-            */
-            for(Move m : s.getMoves()) {
-                s.doMove(m);
-                int score = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth-1);
-                s.undoMove(m);
+            
+            /*
+            DraughtsState state = s.clone();
+            evaluate(s, true);
+            for(Move m : state.getMoves()) {
+                if (bestMove == null) {
+                    bestMove = m;
+                }
+                state.doMove(m);
+                int score = alphaBeta(node, -8888888, 9999999, maxSearchDepth);
+                System.out.println("Score: "+score);
+                state.undoMove(m);
                 if(score > bestValue) {
                     bestValue = score;
                     bestMove = m;
                 }
             }
+            */
             
             // print the results for debugging reasons
             System.err.format(
@@ -59,7 +67,12 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         
         if (bestMove==null) {
             System.err.println("no valid move found!");
-            return getRandomValidMove(s);
+            Move m = getRandomValidMove(s);
+            if (m == null) {
+                System.out.println("No move possible!");
+                System.out.println(s);
+            }
+            return m;
         } else {
             return bestMove;
         }
@@ -100,9 +113,9 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             throws AIStoppedException
     {
         if (node.getState().isWhiteToMove()) {
-            return alphaBetaMax(node, alpha, beta, depth);
-        } else  {
             return alphaBetaMin(node, alpha, beta, depth);
+        } else  {
+            return alphaBetaMax(node, alpha, beta, depth);
         }
     }
     
@@ -125,17 +138,24 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
      */
      int alphaBetaMin(DraughtsNode node, int alpha, int beta, int depth)
             throws AIStoppedException {
-        if (stopped) { stopped = false; throw new AIStoppedException(); }
-        if (depth == 0) {
+        //if (stopped) { stopped = false; throw new AIStoppedException(); }
+        if (depth <= 0) {
             return evaluate(node.getState());
         }
         
         for (Move move : node.getState().getMoves()) {
             node.getState().doMove(move);
-            beta = Integer.min(beta, alphaBetaMax(node, alpha, beta, depth-1));
-            if (beta <= alpha) {
-                return alpha;
-            }
+            int val = alphaBetaMax(node, alpha, beta, depth-1);
+            //if (val > -9000) {
+                if (val <= beta) {
+                    beta = val;
+                    if(depth == maxSearchDepth)
+                        node.setBestMove(move);
+                }
+                if (beta <= alpha) {
+                    return beta;
+                }
+            //}
             node.getState().undoMove(move);
         }
         return beta;
@@ -143,17 +163,24 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     int alphaBetaMax(DraughtsNode node, int alpha, int beta, int depth)
             throws AIStoppedException {
-        if (stopped) { stopped = false; throw new AIStoppedException(); }
-        if (depth == 0) {
+        //if (stopped) { stopped = false; throw new AIStoppedException(); }
+        if (depth <= 0) {
             return evaluate(node.getState());
         }
         
         for (Move move : node.getState().getMoves()) {
             node.getState().doMove(move);
-            alpha = Integer.max(alpha, alphaBetaMin(node, alpha, beta, depth-1));
-            if (alpha >= beta) {
-                return beta;
-            }
+            int val = alphaBetaMin(node, alpha, beta, depth-1);
+            //if(val < 9000){
+                if (val >= alpha) {
+                    alpha = val;
+                    if(depth == maxSearchDepth)
+                        node.setBestMove(move);
+                }
+                if (beta <= alpha) {
+                    return beta;
+                }
+            //}
             node.getState().undoMove(move);
         }
         return alpha;
@@ -166,15 +193,43 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         return value;
         */
     }
-
+    
     /** A method that evaluates the given state. */
-    // ToDo: write an appropriate evaluation function
-    int evaluate(DraughtsState state) {
-        return (int) Arrays.stream(state.getPieces())
-                .skip(1)    // We don't use a[0]
-                .filter(
-                        (p) -> p == DraughtsState.WHITEKING || 
-                                p == DraughtsState.WHITEPIECE
-                ).count();
+    int evaluate(DraughtsState s) {
+        return evaluate(s, false);
+    }
+    
+    public static int evaluate(DraughtsState state, boolean verbose) {
+        int whites = 0;
+        int blacks = 0;
+        int whiteKings = 0;
+        int blackKings = 0;
+        
+        for(int piece : state.getPieces()) {
+            switch(piece) {
+                case DraughtsState.WHITEPIECE:
+                    whites++;
+                    break;
+                case DraughtsState.BLACKPIECE:
+                    blacks++;
+                    break;
+                case DraughtsState.WHITEKING:
+                    whiteKings++;
+                    break;
+                case DraughtsState.BLACKKING:
+                    blackKings++;
+                    break;
+            }
+        }
+        int score;
+        score = whites - blacks + 10*(whiteKings - blackKings);
+        if (verbose) {
+            System.out.println("w: "+whites);
+            System.out.println("b: "+blacks);
+            System.out.println("wk:"+whiteKings);
+            System.out.println("bk:"+blackKings);
+            System.out.println("score: "+score);
+        }
+        return score;
     }
 }
