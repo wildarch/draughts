@@ -20,9 +20,6 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
-    
-    /** boolean that indicates the color of this player */
-    private static boolean isWhite;
 
     public MyDraughtsPlayer(int maxSearchDepth) {
         super("smiley.png"); // ToDo: replace with your own icon
@@ -31,8 +28,6 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     }
     
     @Override public Move getMove(DraughtsState s) {
-        isWhite = s.isWhiteToMove(); //current player must be white
-        
         Move bestMove = null;
         bestValue = -7777777;
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
@@ -201,7 +196,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     /** A method that evaluates the given state. */
     int evaluate(DraughtsState s) {
-        return evaluate(s, true);
+        return evaluate(s, false);
     }
     
     public static int evaluate(DraughtsState state, boolean verbose) {
@@ -228,11 +223,6 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         }
         int score;
         score = whites - blacks + 10*(whiteKings - blackKings);
-        
-        if (!isWhite) {
-            score *= -1;
-        }
-        
         if (verbose) {
             System.out.println("w: "+whites);
             System.out.println("b: "+blacks);
