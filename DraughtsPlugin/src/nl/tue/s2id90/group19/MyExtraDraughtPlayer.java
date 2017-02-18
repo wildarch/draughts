@@ -14,14 +14,14 @@ import org10x10.dam.game.Move;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class MyDraughtsPlayer  extends DraughtsPlayer{
+public class MyExtraDraughtPlayer  extends DraughtsPlayer{
     private int bestValue=0;
     int maxSearchDepth;
     
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     private boolean stopped;
 
-    public MyDraughtsPlayer(int maxSearchDepth) {
+    public MyExtraDraughtPlayer(int maxSearchDepth) {
         super("smiley.png"); // ToDo: replace with your own icon
         this.maxSearchDepth = maxSearchDepth;
         System.out.println("Search depth: "+maxSearchDepth);
@@ -32,17 +32,11 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
         try {
             // compute bestMove and bestValue in a call to alphabeta
-            bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth, s.isWhiteToMove());
+            bestValue = alphaBeta(node, -777777, 888888, maxSearchDepth, s.isWhiteToMove());
             
             // store the bestMove found uptill now
             // NB this is not done in case of an AIStoppedException in alphaBeat()
             bestMove  = node.getBestMove();
-            
-            // print the results for debugging reasons
-            System.err.format(
-                "%s: depth= %2d, best move = %5s, value=%d\n", 
-                this.getClass().getSimpleName(),maxSearchDepth, bestMove, bestValue
-            );
         } catch (AIStoppedException ex) {  /* nothing to do */  }
         
         if (bestMove==null) {
@@ -92,21 +86,29 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     int alphaBeta(DraughtsNode node, int alpha, int beta, int depth, boolean maximize)
             throws AIStoppedException
     {
-                int bestValue = maximize? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestValue = maximize? Integer.MIN_VALUE : Integer.MAX_VALUE;
         if(depth == 0) return evaluate(node.getState());
         for (Move m : node.getState().getMoves()) {
             node.getState().doMove(m);
             int value = alphaBeta(node, alpha, beta, depth-1, !maximize);
             if (maximize && value >= bestValue) {
                 bestValue = value;
+                alpha = Math.max(alpha, value);
                 if(depth == maxSearchDepth) {
                     node.setBestMove(m);
+                }
+                if(alpha >= beta) {
+                    return beta;
                 }
             }
             else if (!maximize && value <= bestValue) {
                 bestValue = value;
+                beta = Math.min(beta, value);
                 if(depth == maxSearchDepth) {
                     node.setBestMove(m);
+                }
+                if(alpha >= beta) {
+                    return alpha;
                 }
             }
             node.getState().undoMove(m);

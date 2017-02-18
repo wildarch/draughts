@@ -50,7 +50,7 @@ public class UninformedPlayer extends DraughtsPlayer {
     
     private int evaluate(DraughtsNode n) {
         int scale = isWhite? 1:-1;
-        return MyDraughtsPlayer.evaluate(n.getState(), false) * scale;
+        return MyDraughtsPlayer.evaluate(n.getState()) * scale;
     }
 
     @Override
