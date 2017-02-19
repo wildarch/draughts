@@ -2,6 +2,7 @@ package nl.tue.s2id90.group19;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import nl.tue.s2id90.draughts.DraughtsState;
@@ -28,25 +29,29 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     }
     
     @Override public Move getMove(DraughtsState s) {
+        stopped = false;
         Move bestMove = null;
-        DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
         try {
+            DraughtsNode node = new DraughtsNode(s);    // the root of the search tree
             // compute bestMove and bestValue in a call to alphabeta
-            bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth, s.isWhiteToMove());
-            
-            // store the bestMove found uptill now
-            // NB this is not done in case of an AIStoppedException in alphaBeat()
-            bestMove  = node.getBestMove();
-            
-            // print the results for debugging reasons
-            System.err.format(
-                "%s: depth= %2d, best move = %5s, value=%d\n", 
-                this.getClass().getSimpleName(),maxSearchDepth, bestMove, bestValue
-            );
-        } catch (AIStoppedException ex) {  /* nothing to do */  }
+            System.out.println("Search depth: "+maxSearchDepth);
+            while (true) {
+                bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, maxSearchDepth, s.isWhiteToMove());
+                if ((bestValue == MAX_VALUE && s.isWhiteToMove()) || 
+                        (bestValue == MIN_VALUE && !s.isWhiteToMove())) {
+                    // We have a winning strategy
+                    break;
+                }
+                //bestValue = depthFirstSearch(node, maxSearchDepth, s.isWhiteToMove());
+                bestMove = node.getBestMove();
+                maxSearchDepth++;
+                System.out.println("Increased search depth to "+maxSearchDepth);
+            }
+        } catch (AIStoppedException ex) {  /* nothing to do */  }    
+        
+        maxSearchDepth = 5;
         
         if (bestMove==null) {
-            System.err.println("no valid move found!");
             Move m = getRandomValidMove(s);
             if (m == null) {
                 System.out.println("No move possible!");
@@ -92,11 +97,47 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     int alphaBeta(DraughtsNode node, int alpha, int beta, int depth, boolean maximize)
             throws AIStoppedException
     {
-                int bestValue = maximize? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        if(stopped) throw new AIStoppedException();
+        int bestValue = maximize? Integer.MIN_VALUE : Integer.MAX_VALUE;
         if(depth == 0) return evaluate(node.getState());
         for (Move m : node.getState().getMoves()) {
             node.getState().doMove(m);
             int value = alphaBeta(node, alpha, beta, depth-1, !maximize);
+            if (maximize && value >= bestValue) {
+                bestValue = value;
+                if(depth == maxSearchDepth) {
+                    node.setBestMove(m);
+                }
+                // Cutoff
+                if (bestValue >= beta) {
+                    node.getState().undoMove(m);
+                    return bestValue;
+                }
+            }
+            else if (!maximize && value <= bestValue) {
+                bestValue = value;
+                if(depth == maxSearchDepth) {
+                    node.setBestMove(m);
+                }
+                // Cutoff
+                if (bestValue <= alpha) {
+                    node.getState().undoMove(m);
+                    return bestValue;
+                }
+            }
+            node.getState().undoMove(m);
+        }
+        return bestValue;
+    }
+    
+    private int depthFirstSearch(DraughtsNode node, int depth, boolean maximize)
+            throws AIStoppedException {
+        if (stopped) throw new AIStoppedException();
+        int bestValue = maximize ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        if(depth == 0) return evaluate(node.getState());
+        for (Move m : node.getState().getMoves()) {
+            node.getState().doMove(m);
+            int value = depthFirstSearch(node, depth-1, !maximize);
             if (maximize && value >= bestValue) {
                 bestValue = value;
                 if(depth == maxSearchDepth) {
@@ -120,13 +161,21 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         int whiteKings = 0;
         int blackKings = 0;
         
-        for(int piece : state.getPieces()) {
+        int[] pieces = state.getPieces();
+        
+        int totalTempi = 0;
+        
+        for(int i = 0; i < pieces.length; i++) {
+            int piece = pieces[i];
+            int tempi = i % 5;
             switch(piece) {
                 case DraughtsState.WHITEPIECE:
                     whites++;
+                    totalTempi += 10-tempi;
                     break;
                 case DraughtsState.BLACKPIECE:
                     blacks++;
+                    totalTempi += tempi;
                     break;
                 case DraughtsState.WHITEKING:
                     whiteKings++;
@@ -137,7 +186,13 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             }
         }
         int score;
-        score = whites - blacks + 10*(whiteKings - blackKings);
-        return score;
+        if (whites+whiteKings == 0) {
+            return MIN_VALUE;
+        }
+        else if (blacks + blackKings == 0) {
+            return MAX_VALUE;
+        }
+        score = whites - blacks + 3*(whiteKings - blackKings);
+        return 10*score + totalTempi;
     }
 }
