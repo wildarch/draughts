@@ -59,6 +59,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             }
             return m;
         } else {
+            System.out.println(bestMove.getFullNotation());
             return bestMove;
         }
     } 
