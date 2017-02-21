@@ -19,7 +19,7 @@ import org10x10.dam.game.Move;
  */
 public class MyDraughtsPlayerTest {
     
-    /** Timelimit per move */
+    /** Time limit per move */
     int timelimit = 2;
     
     public MyDraughtsPlayerTest() {

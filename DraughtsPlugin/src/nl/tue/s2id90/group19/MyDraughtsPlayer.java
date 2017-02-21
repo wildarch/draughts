@@ -156,7 +156,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         return bestValue;
     }
     
-    public static int evaluate(DraughtsState state) {
+    public int evaluate(DraughtsState state) {
         int whites = 0;
         int blacks = 0;
         int whiteKings = 0;
@@ -168,7 +168,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         
         for(int i = 0; i < pieces.length; i++) {
             int piece = pieces[i];
-            int tempi = i % 5;
+            int tempi = (i-1) / 5;
             switch(piece) {
                 case DraughtsState.WHITEPIECE:
                     whites++;
@@ -194,6 +194,6 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             return MAX_VALUE;
         }
         score = whites - blacks + 3*(whiteKings - blackKings);
-        return 10*score + totalTempi;
+        return 20*score + totalTempi;
     }
 }
