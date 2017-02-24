@@ -54,15 +54,16 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
                     throw new RuntimeException("moveStackCounter: "+moveStackCounter);
                 }
                 bestMove = node.getBestMove();
-                searchDepth++;
-                System.out.println("Increased search depth to "+searchDepth);
-                
+
                 if ((bestValue == MAX_VALUE && s.isWhiteToMove()) || 
                         (bestValue == MIN_VALUE && !s.isWhiteToMove())
                         || !useIterativeDeepening) {
                     // We have a winning strategy
                     break;
                 }
+                
+                searchDepth++;
+                System.out.println("Increased search depth to "+searchDepth);
             }
             
         } catch (AIStoppedException ex) {  moveStackCounter = 0; }    
@@ -204,7 +205,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
                     break;
                 case DraughtsState.BLACKPIECE:
                     blacks++;
-                    totalTempi += tempi;
+                    totalTempi -= tempi;
                     break;
                 case DraughtsState.WHITEKING:
                     whiteKings++;
@@ -214,14 +215,15 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
                     break;
             }
         }
-        int score;
+        int score = 0;
+        
         if (whites+whiteKings == 0) {
-            return MIN_VALUE;
+            score = -1000;
         }
         else if (blacks + blackKings == 0) {
-            return MAX_VALUE;
+            score = 1000;
         }
-        score = whites - blacks + 3*(whiteKings - blackKings);
+        score += whites - blacks + 3*(whiteKings - blackKings);
         return 20*score + totalTempi;
     }
 

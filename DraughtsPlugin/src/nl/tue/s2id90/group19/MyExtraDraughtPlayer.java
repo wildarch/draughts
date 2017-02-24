@@ -22,40 +22,46 @@ public class MyExtraDraughtPlayer  extends MyDraughtsPlayer {
     }
     
     @Override
-    int alphaBeta(DraughtsNode node, int alpha, int beta, int depth, boolean maximize, boolean didCapture)
-            throws AIStoppedException
-    {
-        if(stopped) throw new AIStoppedException();
-        int bestValue = maximize? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        if(depth == 0) return evaluate(node.getState());
-        for (Move m : node.getState().getMoves()) {
-            node.getState().doMove(m);
-            int value = alphaBeta(node, alpha, beta, depth - 1, !maximize, false);
-            if (maximize && value >= bestValue) {
-                bestValue = value;
-                if(depth == searchDepth) {
-                    node.setBestMove(m);
-                }
-                // Cutoff
-                if (bestValue >= beta) {
-                    node.getState().undoMove(m);
-                    return bestValue;
-                }
+    public int evaluate(DraughtsState state) {
+        int whites = 0;
+        int blacks = 0;
+        int whiteKings = 0;
+        int blackKings = 0;
+        
+        int[] pieces = state.getPieces();
+        
+        int totalTempi = 0;
+        
+        for(int i = 0; i < pieces.length; i++) {
+            int piece = pieces[i];
+            int tempi = (i-1) / 5;
+            switch(piece) {
+                case DraughtsState.WHITEPIECE:
+                    whites++;
+                    totalTempi += 10-tempi;
+                    break;
+                case DraughtsState.BLACKPIECE:
+                    blacks++;
+                    totalTempi += tempi;
+                    break;
+                case DraughtsState.WHITEKING:
+                    whiteKings++;
+                    break;
+                case DraughtsState.BLACKKING:
+                    blackKings++;
+                    break;
             }
-            else if (!maximize && value <= bestValue) {
-                bestValue = value;
-                if(depth == searchDepth) {
-                    node.setBestMove(m);
-                }
-                // Cutoff
-                if (bestValue <= alpha) {
-                    node.getState().undoMove(m);
-                    return bestValue;
-                }
-            }
-            node.getState().undoMove(m);
         }
-        return bestValue;
+        int score = 0;
+        
+        if (whites+whiteKings == 0) {
+            return MIN_VALUE;
+        }
+        else if (blacks + blackKings == 0) {
+            return MAX_VALUE;
+        }
+        score += whites - blacks + 3*(whiteKings - blackKings);
+        return 20*score + totalTempi;
     }
     
 }
