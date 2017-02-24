@@ -50,18 +50,19 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             searchDepth = baseSearchDepth;
             while (true) {
                 bestValue = alphaBeta(node, MIN_VALUE, MAX_VALUE, searchDepth, s.isWhiteToMove(), false);
-                if ((bestValue == MAX_VALUE && s.isWhiteToMove()) || 
-                        (bestValue == MIN_VALUE && !s.isWhiteToMove())
-                        || !useIterativeDeepening) {
-                    // We have a winning strategy
-                    break;
-                }
                 if (moveStackCounter != 0) {
                     throw new RuntimeException("moveStackCounter: "+moveStackCounter);
                 }
                 bestMove = node.getBestMove();
                 searchDepth++;
                 System.out.println("Increased search depth to "+searchDepth);
+                
+                if ((bestValue == MAX_VALUE && s.isWhiteToMove()) || 
+                        (bestValue == MIN_VALUE && !s.isWhiteToMove())
+                        || !useIterativeDeepening) {
+                    // We have a winning strategy
+                    break;
+                }
             }
             
         } catch (AIStoppedException ex) {  moveStackCounter = 0; }    
