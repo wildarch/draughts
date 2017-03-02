@@ -1,5 +1,10 @@
 package nl.tue.s2id90.group19;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
 import java.util.Timer;
@@ -21,6 +26,9 @@ public class MyDraughtsPlayerTest {
     
     /** Time limit per move */
     int timelimit = 2;
+    
+    /** Search depth for all players */
+    int searchDepth = 5;
     
     public MyDraughtsPlayerTest() {
     }
@@ -49,7 +57,7 @@ public class MyDraughtsPlayerTest {
     }
     
 
-    @Test
+    //@Test
     public void testBeatsExtra() {
         DraughtsPlayer white = new MyDraughtsPlayer(5);
         DraughtsPlayer black = new MyDraughtsPlayer(5);
@@ -57,6 +65,21 @@ public class MyDraughtsPlayerTest {
         assertTrue(resultGame > 0);
     }
     
+    //@Test
+    public void machineLearning() {
+        //Generate our first generation
+        
+        //Or read from file if specified
+        
+        
+        //Make them play against eachother to get better
+        
+        //After a round is done, write everything to file (to make sure the tests
+        //can be stopped safely
+        
+        //After all matches player: start over with the next generation
+        
+    }
     
     //for generating patterns more easily
     /* 
@@ -69,9 +92,118 @@ public class MyDraughtsPlayerTest {
      * 2 = black piece
      * 3 = white king
      * 4 = black king
+     * 9 = DO NOT CARE
      */
     
+    @Test
+    public void testWriteRead() {
+        MyDraughtsPlayer player1 = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, new int[][]{{3,0,0,0,3,0,0,0,0,0,0,3,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{3,0,0,0,3,0,0,0,0,0,0,3,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2}}, new int[]{100, 50});
+            
+        try {
+            File file = new File("generationtest.txt");
+            FileWriter fileWriter = new FileWriter(file);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            writePlayerToFile(player1, bufferedWriter);
+            
+            bufferedWriter.flush();
+            bufferedWriter.close();
+            
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            MyDraughtsPlayer player2 = readPlayerFromFile(bufferedReader);
+            bufferedReader.close();
+            
+            
+            player2.fitness = 5;
+            
+            File file2 = new File("generationtest2.txt");
+            FileWriter fileWriter2 = new FileWriter(file2);
+            BufferedWriter bufferedWriter2 = new BufferedWriter(fileWriter2);
+            writePlayerToFile(player1, bufferedWriter2);
+            writePlayerToFile(player2, bufferedWriter2);
+            bufferedWriter2.flush();
+            bufferedWriter2.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     
+    }
+    
+    
+    
+    public void writePlayerToFile(MyDraughtsPlayer player, BufferedWriter writer) {
+        //Write all relevant data about a player to a file
+        try {
+            writer.write("PlayerStart");
+            writer.newLine();
+            writer.write(String.valueOf(player.generation));
+            writer.newLine();
+            writer.write(String.valueOf(player.fitness));
+            writer.newLine();
+            writer.write(String.valueOf(player.scoreValue));
+            writer.newLine();
+            writer.write(String.valueOf(player.winValue));
+            writer.newLine();
+            writer.write(String.valueOf(player.tempiValue));
+            writer.newLine();
+            writer.write("Patterns");
+            writer.newLine();
+            writer.write(String.valueOf(player.patterns.length));
+            writer.newLine();
+            for (int i = 0; i < player.patterns.length; i++) {
+                for (int j = 0; j < player.patterns[i].length; j++) {
+                    writer.write(String.valueOf(player.patterns[i][j]));
+                }
+                writer.write(".");
+                writer.write(String.valueOf(player.patternValues[i]));
+                writer.newLine();
+            }
+            writer.write("PlayerEnd");
+            writer.newLine();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public MyDraughtsPlayer readPlayerFromFile(BufferedReader reader) throws Exception { 
+        String firstLine = reader.readLine();
+        if (!firstLine.equals("PlayerStart")) {
+            throw new Exception("Reader is not in correct position in file");
+        }
+        int generation = Integer.parseInt(reader.readLine());
+        int fitness = Integer.parseInt(reader.readLine());
+        int scoreValue = Integer.parseInt(reader.readLine());
+        int winValue = Integer.parseInt(reader.readLine());
+        int tempiValue = Integer.parseInt(reader.readLine());
+        String patternLine = reader.readLine();
+        if (!patternLine.equals("Patterns")) {
+            throw new Exception("Player (patterns) not formatted properly in file");
+        }
+        int amountOfPatterns = Integer.parseInt(reader.readLine());
+        int[] patternValues = new int[amountOfPatterns];
+        int[][] patterns = new int[amountOfPatterns][50];
+        for (int i = 0; i < amountOfPatterns; i++) {
+            String currentLine = reader.readLine();
+            //patterns always have length 50
+            for (int j = 0; j < 50; j++) {
+                patterns[i][j] = Character.getNumericValue(currentLine.charAt(j));
+            }
+            if (currentLine.charAt(50) != '.') { 
+                throw new Exception("Incorrect syntax of pattern");
+            }
+            //patternvalue is what's left of the string
+            patternValues[i] = Integer.parseInt(currentLine.substring(51, currentLine.length()));
+        }
+        String endLine = reader.readLine();
+        if (!endLine.equals("PlayerEnd")) {
+            throw new Exception("End of player not in proper place in file");
+        }
+        MyDraughtsPlayer scannedPlayer = new MyDraughtsPlayer(searchDepth, scoreValue, winValue, tempiValue, patterns, patternValues);
+        scannedPlayer.fitness = fitness;
+        scannedPlayer.generation = generation;
+        return scannedPlayer;
+    }
     
     
     /** Simple evaluate function that counts pieces and counts king as 3 */

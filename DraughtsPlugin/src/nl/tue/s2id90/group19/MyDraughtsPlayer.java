@@ -29,7 +29,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     public int[] patternValues;
     
     //machine learning values
-    public double fitness = 0;
+    public int fitness = 0;
     public int generation = 0;
     
     int moveStackCounter = 0;
@@ -254,10 +254,12 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             boolean samePattern = true;
             
             for (int j = 1; j < pieces.length; j++) {
-                if (i != j) {
-                    //part of pattern is not the same as current state: stop
-                    samePattern = false;
-                    break;
+                if (patterns[i][j-1] != 9) { //if 9, DO NOT CARE: don't compare
+                    if (patterns[i][j-1] != pieces[j]) {
+                        //part of pattern is not the same as current state: stop
+                        samePattern = false;
+                        break;
+                    }
                 }
             }
             
