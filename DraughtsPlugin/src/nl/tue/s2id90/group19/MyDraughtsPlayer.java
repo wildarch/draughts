@@ -21,6 +21,17 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     int searchDepth;
     boolean useIterativeDeepening;
     
+    //the characteristics of this specific draughtsplayer
+    public int scoreValue = 20; //default value
+    public int winValue = 1000; //default value
+    public int tempiValue = 1;
+    public int[][] patterns;
+    public int[] patternValues;
+    
+    //machine learning values
+    public double fitness = 0;
+    public int generation = 0;
+    
     int moveStackCounter = 0;
     
     /** boolean that indicates that the GUI asked the player to stop thinking. */
@@ -38,6 +49,18 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         super("smiley");
         this.baseSearchDepth = searchDepth;
         this.useIterativeDeepening = false;
+        
+    }
+    
+    public MyDraughtsPlayer(int searchDepth, int scoreValue, int winValue, int tempiValue, int[][] patterns, int[] patternValues) {
+        super("smiley");
+        this.baseSearchDepth = searchDepth;
+        this.useIterativeDeepening = false;
+        this.scoreValue = scoreValue;
+        this.winValue = winValue;
+        this.tempiValue = tempiValue;
+        this.patterns = patterns;
+        this.patternValues = patternValues;
         
     }
     
@@ -218,13 +241,34 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         int score = 0;
         
         if (whites+whiteKings == 0) {
-            score = -1000;
+            score = -winValue;
         }
         else if (blacks + blackKings == 0) {
-            score = 1000;
+            score = winValue;
         }
+        
+        //Check for patterns
+        for (int i = 0; i < patterns.length; i++) {
+            //Scan through current draughststate and see if a pattern occurs:
+            //if so, give points for this
+            boolean samePattern = true;
+            
+            for (int j = 1; j < pieces.length; j++) {
+                if (i != j) {
+                    //part of pattern is not the same as current state: stop
+                    samePattern = false;
+                    break;
+                }
+            }
+            
+            //If pattern is in current state: Give points for this
+            if (samePattern) {
+                score += patternValues[i];
+            }
+        }
+        
         score += whites - blacks + 3*(whiteKings - blackKings);
-        return 20*score + totalTempi;
+        return scoreValue*score + tempiValue*totalTempi;
     }
 
     private boolean isQuiet(DraughtsState state) {

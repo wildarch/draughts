@@ -25,26 +25,6 @@ public class MyDraughtsPlayerTest {
     public MyDraughtsPlayerTest() {
     }
     
-    /* 
-     * Simple method to convert a state into a string: useful for more 
-     * efficiently copying a state and searching for patterns
-     * Format: String with length 50. Every 5 characters is 1 row.
-     * Meaning of characters:
-     * 0 = empty
-     * 1 = white piece
-     * 2 = black piece
-     * 3 = white king
-     * 4 = black king
-     */
-    
-    public String stateToString(DraughtsState state) {
-        String returnString = "";
-        int[] pieces = state.getPieces();
-        for (int i = 1; i < pieces.length; i++) {
-            returnString += pieces[i];
-        }
-        return returnString;
-    }
     
     private int simulateGame(DraughtsPlayer white, DraughtsPlayer black) {
             DraughtsState state = new DraughtsState();
@@ -76,6 +56,21 @@ public class MyDraughtsPlayerTest {
         int resultGame = simulateGame(white, black);
         assertTrue(resultGame > 0);
     }
+    
+    
+    //for generating patterns more easily
+    /* 
+     * Simple method to convert a state into a string: useful for more 
+     * efficiently copying a state and searching for patterns
+     * Format: String with length 50. Every 5 characters is 1 row.
+     * Meaning of characters:
+     * 0 = empty
+     * 1 = white piece
+     * 2 = black piece
+     * 3 = white king
+     * 4 = black king
+     */
+    
     
     
     
