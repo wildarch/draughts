@@ -25,29 +25,59 @@ public class MyDraughtsPlayerTest {
     public MyDraughtsPlayerTest() {
     }
     
-    private void winsOf(DraughtsPlayer p1, DraughtsPlayer p2) {
-            DraughtsState stateWB = new DraughtsState();
-            DraughtsState stateBW = new DraughtsState();
-            while(!stateWB.isEndState()) {
-                DraughtsPlayer player = stateWB.isWhiteToMove()? p1 : p2;
-                stateWB.doMove(player.getMove(stateWB));    
-            }
-            while(!stateBW.isEndState()) {
-                DraughtsPlayer player = stateBW.isWhiteToMove()? p2 : p1;
-                stateBW.doMove(player.getMove(stateBW));    
+    /* 
+     * Simple method to convert a state into a string: useful for more 
+     * efficiently copying a state and searching for patterns
+     * Format: String with length 50. Every 5 characters is 1 row.
+     * Meaning of characters:
+     * 0 = empty
+     * 1 = white piece
+     * 2 = black piece
+     * 3 = white king
+     * 4 = black king
+     */
+    
+    public String stateToString(DraughtsState state) {
+        String returnString = "";
+        int[] pieces = state.getPieces();
+        for (int i = 1; i < pieces.length; i++) {
+            returnString += pieces[i];
+        }
+        return returnString;
+    }
+    
+    private int simulateGame(DraughtsPlayer white, DraughtsPlayer black) {
+            DraughtsState state = new DraughtsState();
+            int captureTimer = 0;
+            while(!state.isEndState()) {
+                DraughtsPlayer player = state.isWhiteToMove()? white : black;
+                Move bestMove = player.getMove(state);
+                if (bestMove.isCapture() || bestMove.isPieceMove()) {
+                    captureTimer = 0;
+                } else {
+                    captureTimer++;
+                }
+                if (captureTimer>=20) {
+                    //only kings moved around, no captures for 20 moves: draw
+                    break;
+                }
+                state.doMove(bestMove);    
+                
             }
             
-            assertFalse(stateWB.isWhiteToMove());
-            assertTrue(stateBW.isWhiteToMove());
+            return evaluate(state);
     }
     
 
     @Test
     public void testBeatsExtra() {
-        DraughtsPlayer white = new MyDraughtsPlayer(4);
-        DraughtsPlayer black = new MyExtraDraughtPlayer(4);
-        winsOf(white, black);
+        DraughtsPlayer white = new MyDraughtsPlayer(5);
+        DraughtsPlayer black = new MyDraughtsPlayer(5);
+        int resultGame = simulateGame(white, black);
+        assertTrue(resultGame > 0);
     }
+    
+    
     
     /** Simple evaluate function that counts pieces and counts king as 3 */
     public static int evaluate(DraughtsState state) {
