@@ -20,7 +20,7 @@ public class MyExtraDraughtPlayer  extends MyDraughtsPlayer {
     MyExtraDraughtPlayer(int baseSearchDepth, boolean enableDeepening) {
         super(baseSearchDepth, enableDeepening);
     }
-    
+  /*  
     @Override
     public int evaluate(DraughtsState state) {
         int whites = 0;
@@ -63,5 +63,6 @@ public class MyExtraDraughtPlayer  extends MyDraughtsPlayer {
         score += whites - blacks + 3*(whiteKings - blackKings);
         return 20*score + totalTempi;
     }
+    */
     
 }

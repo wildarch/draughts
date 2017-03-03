@@ -39,7 +39,7 @@ public class MyDraughtsPlayerTest {
     int searchDepth = 4;
     
     int generation = 0;
-    int generationSize = 4;
+    int generationSize = 8;
     
     boolean generateNew = true;
     String readFileName = "machineLearning.txt";
@@ -94,7 +94,7 @@ public class MyDraughtsPlayerTest {
             if (result1 > 0) {
                 Player1.fitness += drawWinScore;
                 Player2.fitness -= drawWinScore;
-            } else {
+            } else if (result1 < 0) {
                 Player1.fitness -= drawWinScore;
                 Player2.fitness += drawWinScore;
             }
@@ -122,10 +122,11 @@ public class MyDraughtsPlayerTest {
                 File file = new File(outputFileName + String.valueOf(generation) + ".txt");
                 FileWriter fileWriter = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
-                for (int i = 0; i < generationSize; i++) {
+                MyDraughtsPlayer firstPlayer = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
+                Players.add(firstPlayer);
+                for (int i = 1; i < generationSize; i++) {
                     //Generate random values for everything
-                    MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50), 500 + random.nextInt(50000), random.nextInt(6), 10 - random.nextInt(21), 5 - random.nextInt(11));
+                    MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50), 500 + random.nextInt(50000), random.nextInt(6), 0, 0);
                     newPlayer.generation = 0;
                     Players.add(newPlayer);
                     writePlayerToFile(newPlayer, bufferedWriter);
@@ -188,7 +189,7 @@ public class MyDraughtsPlayerTest {
             int amountOfNewPlayers = generationSize - Players.size();
             for (int i = 0; i < amountOfNewPlayers; i++) {
                 MyDraughtsPlayer oldPlayer = Players.get(i);
-                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (2 - random.nextInt(5)), oldPlayer.columnValue + (5 - random.nextInt(11)), oldPlayer.splitValue + (2 - random.nextInt(5)));
+                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (2 - random.nextInt(5)), 0, 0);
                 Players.add(newPlayer);
             }
 

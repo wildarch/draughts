@@ -23,10 +23,10 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     //the characteristics of this specific draughtsplayer
     public int scoreValue = 20; //default value
-    public int winValue = 1000; //default value
-    public int columnValue = 1; //default value
+    public int winValue = 2000; //default value
+    public int columnValue = 0; //default value
     public int tempiValue = 1; //default value
-    public int splitValue = -1; //default value
+    public int splitValue = 0; //default value
 
     
     //machine learning values
@@ -256,7 +256,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         else if (blacks + blackKings == 0) {
             score = winValue;
         }
-        
+        /*
         //Value columns (for building formations) and check for split piece position
         for (int i = 0; i < columnsWhite.length; i++) {
             if (columnsWhite[i]>=3) {
@@ -277,7 +277,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
                 }                  
             }
         }
-        
+        */
            
         score += whites - blacks + 3*(whiteKings - blackKings);
         returnScore += scoreValue*score + tempiValue*totalTempi;
