@@ -24,9 +24,10 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     //the characteristics of this specific draughtsplayer
     public int scoreValue = 20; //default value
     public int winValue = 1000; //default value
-    public int tempiValue = 1;
-    public int[][] patterns;
-    public int[] patternValues;
+    public int columnValue = 1; //default value
+    public int tempiValue = 1; //default value
+    public int splitValue = -1; //default value
+
     
     //machine learning values
     public int fitness = 0;
@@ -52,15 +53,16 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         
     }
     
-    public MyDraughtsPlayer(int searchDepth, int scoreValue, int winValue, int tempiValue, int[][] patterns, int[] patternValues) {
+    public MyDraughtsPlayer(int searchDepth, int scoreValue, int winValue, int tempiValue, int columnValue, int splitValue) {
         super("smiley");
         this.baseSearchDepth = searchDepth;
         this.useIterativeDeepening = false;
         this.scoreValue = scoreValue;
         this.winValue = winValue;
         this.tempiValue = tempiValue;
-        this.patterns = patterns;
-        this.patternValues = patternValues;
+        this.columnValue = columnValue;
+        this.splitValue = splitValue;
+
         
     }
     
@@ -209,6 +211,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     }
     
     public int evaluate(DraughtsState state) {
+        int returnScore = 0;
         int whites = 0;
         int blacks = 0;
         int whiteKings = 0;
@@ -218,15 +221,22 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         
         int totalTempi = 0;
         
+        
+        int[] columnsWhite = new int[5];
+        int[] columnsBlack = new int[5];
+        
         for(int i = 0; i < pieces.length; i++) {
             int piece = pieces[i];
             int tempi = (i-1) / 5;
+            int column = (i-1) % 5;
             switch(piece) {
                 case DraughtsState.WHITEPIECE:
+                    columnsWhite[column]++;
                     whites++;
                     totalTempi += 10-tempi;
                     break;
                 case DraughtsState.BLACKPIECE:
+                    columnsBlack[column]++;
                     blacks++;
                     totalTempi -= tempi;
                     break;
@@ -247,30 +257,31 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             score = winValue;
         }
         
-        //Check for patterns
-        for (int i = 0; i < patterns.length; i++) {
-            //Scan through current draughststate and see if a pattern occurs:
-            //if so, give points for this
-            boolean samePattern = true;
-            
-            for (int j = 1; j < pieces.length; j++) {
-                if (patterns[i][j-1] != 9) { //if 9, DO NOT CARE: don't compare
-                    if (patterns[i][j-1] != pieces[j]) {
-                        //part of pattern is not the same as current state: stop
-                        samePattern = false;
-                        break;
-                    }
-                }
+        //Value columns (for building formations) and check for split piece position
+        for (int i = 0; i < columnsWhite.length; i++) {
+            if (columnsWhite[i]>=3) {
+                score += columnValue;
             }
-            
-            //If pattern is in current state: Give points for this
-            if (samePattern) {
-                score += patternValues[i];
+            if (columnsBlack[i]>=3) {
+                score -= columnValue;
+            }                
+            // only check if it is not on the side
+            if (i > 0 && i < columnsWhite.length - 1) { 
+                 if (columnsWhite[i] == 1 && columnsWhite[i-1] == 0 && columnsWhite[i+1] == 0) {
+                    //unbalanced piece
+                    score += splitValue;
+                } 
+                if (columnsBlack[i] == 1 && columnsBlack[i-1] == 0  && columnsBlack[i+1] == 0) {
+                    //unbalanced piece
+                    score -= splitValue;
+                }                  
             }
         }
         
+           
         score += whites - blacks + 3*(whiteKings - blackKings);
-        return scoreValue*score + tempiValue*totalTempi;
+        returnScore += scoreValue*score + tempiValue*totalTempi;
+        return returnScore;
     }
 
     private boolean isQuiet(DraughtsState state) {

@@ -7,6 +7,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -24,11 +28,30 @@ import org10x10.dam.game.Move;
  */
 public class MyDraughtsPlayerTest {
     
+    /** Scores */
+    int winScore = 4;
+    int drawWinScore = 1;
+    
     /** Time limit per move */
     int timelimit = 2;
     
     /** Search depth for all players */
-    int searchDepth = 5;
+    int searchDepth = 4;
+    
+    int generation = 0;
+    int generationSize = 20;
+    
+    boolean generateNew = true;
+    String readFileName = "machineLearning.txt";
+    String outputFileName = "generation__";
+    
+    ArrayList<MyDraughtsPlayer> Players = new ArrayList<>();
+    
+    
+    
+    
+    
+    
     
     public MyDraughtsPlayerTest() {
     }
@@ -56,49 +79,152 @@ public class MyDraughtsPlayerTest {
             return evaluate(state);
     }
     
+    //Plays game where player1 and player2 play both sides and updates fitness
+    private void playGame(MyDraughtsPlayer Player1, MyDraughtsPlayer Player2) {
+        int result1 = simulateGame(Player1, Player2);
+        if (result1 == Integer.MAX_VALUE) {
+            //White wins:
+            Player1.fitness += winScore;
+            Player2.fitness -= winScore;
+        } else if (result1 == Integer.MIN_VALUE) {
+            //Black wins:
+            Player1.fitness -= winScore;
+            Player2.fitness += winScore;
+        } else { //draw
+            if (result1 > 0) {
+                Player1.fitness += drawWinScore;
+                Player2.fitness -= drawWinScore;
+            } else {
+                Player1.fitness -= drawWinScore;
+                Player2.fitness += drawWinScore;
+            }
+        }
+        int result2 = simulateGame(Player2, Player1);
+        if (result2 == Integer.MAX_VALUE) {
+            //White wins:
+            Player1.fitness -= winScore;
+            Player2.fitness += winScore;
+        } else if (result2 == Integer.MIN_VALUE) {
+            //Black wins:
+            Player1.fitness += winScore;
+            Player2.fitness -= winScore;
+        } else { //draw
+            if (result2 > 0) {
+                Player1.fitness -= drawWinScore;
+                Player2.fitness += drawWinScore;
+            } else {
+                Player1.fitness += drawWinScore;
+                Player2.fitness -= drawWinScore;
+            }
+        }       
+                    
+    }
+    
 
     //@Test
     public void testBeatsExtra() {
-        DraughtsPlayer white = new MyDraughtsPlayer(5);
-        DraughtsPlayer black = new MyDraughtsPlayer(5);
+        DraughtsPlayer white = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
+        DraughtsPlayer black = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
         int resultGame = simulateGame(white, black);
+        System.out.println(resultGame);
         assertTrue(resultGame > 0);
     }
     
-    //@Test
+    @Test
     public void machineLearning() {
+        //Create random object
+        Random random = new Random();
         //Generate our first generation
+        if (generateNew) {
+            for (int i = 0; i < generationSize; i++) {
+                //GEN0: Generate random values for everything
+                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50),500+random.nextInt(50000),random.nextInt(6),10-random.nextInt(21),5-random.nextInt(11));
+                newPlayer.generation = 0;
+                Players.add(newPlayer);
+            }
+        } else {
+            try {
+                File file = new File(readFileName);
+                FileReader fileReader = new FileReader(file);
+                BufferedReader bufferedReader = new BufferedReader(fileReader);
+                String firstLine;
+                while ((firstLine = bufferedReader.readLine()) != null) {
+                    Players.add(readPlayerFromFile(bufferedReader, firstLine));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println(e.getMessage());
+            }
+        }
+        while (generation < 100) {
+            
+            //first write everything to file
+            try {
+            File file = new File(outputFileName+String.valueOf(generation)+".txt");
+            FileWriter fileWriter = new FileWriter(file);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                        
+            for (MyDraughtsPlayer p : Players) {
+                 writePlayerToFile(p, bufferedWriter);
+            }
+            
+            bufferedWriter.flush();
+            bufferedWriter.close();
+            
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println(e.getMessage());
+            }
+
+            //got list of players: now make them play eachother
+            for (int i = 0; i < Players.size(); i++) {
+                for (int j = 0; j < Players.size(); j++) {
+                    if (i != j) {
+                        MyDraughtsPlayer Player1 = Players.get(i);
+                        MyDraughtsPlayer Player2 = Players.get(j);
+                        playGame(Player1, Player2);
+                    }
+                }
+            }
+
+            //done playing eachother: cut off bottom half
+            //sort them by fitness first
+            Collections.sort(Players, new Comparator<MyDraughtsPlayer>() {
+                @Override
+                public int compare(MyDraughtsPlayer p1, MyDraughtsPlayer p2) {
+                    return p2.fitness - p1.fitness; // Descending
+                }
+            });
+            for (int i = (Players.size() / 2); i < Players.size(); i++) {
+                System.out.println(Players.get(Players.size() - 1).fitness); //test, should be ascending
+                Players.remove(Players.size() - 1); //remove last element repeatedly until done
+            }
+
+            //Now add new candidates to play against: Make them random deviations of already exisiting ones 
+            int amountOfNewPlayers = Players.size();
+            for (int i = 0; i < amountOfNewPlayers; i++) {
+                MyDraughtsPlayer oldPlayer = Players.get(i);
+                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (2 - random.nextInt(5)), oldPlayer.columnValue + (5 - random.nextInt(11)), oldPlayer.splitValue + (2 - random.nextInt(5)));
+                Players.add(newPlayer);
+            }
+
+            generation++;
+            //Increase all generations, reset fitness
+            for (MyDraughtsPlayer p : Players) {
+                p.fitness = 0;
+                p.generation = generation;
+            }
+        }
         
-        //Or read from file if specified
-        
-        
-        //Make them play against eachother to get better
-        
-        //After a round is done, write everything to file (to make sure the tests
-        //can be stopped safely
-        
-        //After all matches player: start over with the next generation
         
     }
     
-    //for generating patterns more easily
-    /* 
-     * Simple method to convert a state into a string: useful for more 
-     * efficiently copying a state and searching for patterns
-     * Format: String with length 50. Every 5 characters is 1 row.
-     * Meaning of characters:
-     * 0 = empty
-     * 1 = white piece
-     * 2 = black piece
-     * 3 = white king
-     * 4 = black king
-     * 9 = DO NOT CARE
-     */
     
-    @Test
+    
+    //@Test
     public void testWriteRead() {
-        MyDraughtsPlayer player1 = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, new int[][]{{3,0,0,0,3,0,0,0,0,0,0,3,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{3,0,0,0,3,0,0,0,0,0,0,3,4,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2}}, new int[]{100, 50});
-            
+        MyDraughtsPlayer player1 = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 4, -2);
+
         try {
             File file = new File("generationtest.txt");
             FileWriter fileWriter = new FileWriter(file);
@@ -110,7 +236,8 @@ public class MyDraughtsPlayerTest {
             
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
-            MyDraughtsPlayer player2 = readPlayerFromFile(bufferedReader);
+            String firstLine = bufferedReader.readLine();
+            MyDraughtsPlayer player2 = readPlayerFromFile(bufferedReader, firstLine);
             bufferedReader.close();
             
             
@@ -147,18 +274,10 @@ public class MyDraughtsPlayerTest {
             writer.newLine();
             writer.write(String.valueOf(player.tempiValue));
             writer.newLine();
-            writer.write("Patterns");
+            writer.write(String.valueOf(player.columnValue));
             writer.newLine();
-            writer.write(String.valueOf(player.patterns.length));
+            writer.write(String.valueOf(player.splitValue));
             writer.newLine();
-            for (int i = 0; i < player.patterns.length; i++) {
-                for (int j = 0; j < player.patterns[i].length; j++) {
-                    writer.write(String.valueOf(player.patterns[i][j]));
-                }
-                writer.write(".");
-                writer.write(String.valueOf(player.patternValues[i]));
-                writer.newLine();
-            }
             writer.write("PlayerEnd");
             writer.newLine();
         } catch (Exception e) {
@@ -166,8 +285,8 @@ public class MyDraughtsPlayerTest {
         }
     }
     
-    public MyDraughtsPlayer readPlayerFromFile(BufferedReader reader) throws Exception { 
-        String firstLine = reader.readLine();
+    public MyDraughtsPlayer readPlayerFromFile(BufferedReader reader, String firstLine) throws Exception { 
+        firstLine = reader.readLine();
         if (!firstLine.equals("PlayerStart")) {
             throw new Exception("Reader is not in correct position in file");
         }
@@ -176,30 +295,13 @@ public class MyDraughtsPlayerTest {
         int scoreValue = Integer.parseInt(reader.readLine());
         int winValue = Integer.parseInt(reader.readLine());
         int tempiValue = Integer.parseInt(reader.readLine());
-        String patternLine = reader.readLine();
-        if (!patternLine.equals("Patterns")) {
-            throw new Exception("Player (patterns) not formatted properly in file");
-        }
-        int amountOfPatterns = Integer.parseInt(reader.readLine());
-        int[] patternValues = new int[amountOfPatterns];
-        int[][] patterns = new int[amountOfPatterns][50];
-        for (int i = 0; i < amountOfPatterns; i++) {
-            String currentLine = reader.readLine();
-            //patterns always have length 50
-            for (int j = 0; j < 50; j++) {
-                patterns[i][j] = Character.getNumericValue(currentLine.charAt(j));
-            }
-            if (currentLine.charAt(50) != '.') { 
-                throw new Exception("Incorrect syntax of pattern");
-            }
-            //patternvalue is what's left of the string
-            patternValues[i] = Integer.parseInt(currentLine.substring(51, currentLine.length()));
-        }
+        int columnValue = Integer.parseInt(reader.readLine());
+        int splitValue = Integer.parseInt(reader.readLine());
         String endLine = reader.readLine();
         if (!endLine.equals("PlayerEnd")) {
             throw new Exception("End of player not in proper place in file");
         }
-        MyDraughtsPlayer scannedPlayer = new MyDraughtsPlayer(searchDepth, scoreValue, winValue, tempiValue, patterns, patternValues);
+        MyDraughtsPlayer scannedPlayer = new MyDraughtsPlayer(searchDepth, scoreValue, winValue, tempiValue, columnValue, splitValue);
         scannedPlayer.fitness = fitness;
         scannedPlayer.generation = generation;
         return scannedPlayer;
@@ -232,13 +334,14 @@ public class MyDraughtsPlayerTest {
             }
         }
         int score;
-        if (whites+whiteKings == 0) {
-            return MIN_VALUE;
-        }
-        else if (blacks + blackKings == 0) {
-            return MAX_VALUE;
-        }
         score = whites - blacks + 3*(whiteKings - blackKings);
+        
+        if (blacks+blackKings == 0) {
+            score = Integer.MAX_VALUE;
+        }
+        if (whites+whiteKings == 0) {
+            score = Integer.MIN_VALUE;
+        }
         return score;
     }
 }
