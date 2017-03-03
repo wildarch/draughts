@@ -39,7 +39,7 @@ public class MyDraughtsPlayerTest {
     int searchDepth = 4;
     
     int generation = 0;
-    int generationSize = 20;
+    int generationSize = 4;
     
     boolean generateNew = true;
     String readFileName = "machineLearning.txt";
@@ -79,7 +79,7 @@ public class MyDraughtsPlayerTest {
             return evaluate(state);
     }
     
-    //Plays game where player1 and player2 play both sides and updates fitness
+    //Plays game where player1 plays vs player2
     private void playGame(MyDraughtsPlayer Player1, MyDraughtsPlayer Player2) {
         int result1 = simulateGame(Player1, Player2);
         if (result1 == Integer.MAX_VALUE) {
@@ -98,26 +98,7 @@ public class MyDraughtsPlayerTest {
                 Player1.fitness -= drawWinScore;
                 Player2.fitness += drawWinScore;
             }
-        }
-        int result2 = simulateGame(Player2, Player1);
-        if (result2 == Integer.MAX_VALUE) {
-            //White wins:
-            Player1.fitness -= winScore;
-            Player2.fitness += winScore;
-        } else if (result2 == Integer.MIN_VALUE) {
-            //Black wins:
-            Player1.fitness += winScore;
-            Player2.fitness -= winScore;
-        } else { //draw
-            if (result2 > 0) {
-                Player1.fitness -= drawWinScore;
-                Player2.fitness += drawWinScore;
-            } else {
-                Player1.fitness += drawWinScore;
-                Player2.fitness -= drawWinScore;
-            }
-        }       
-                    
+        }          
     }
     
 
@@ -136,11 +117,26 @@ public class MyDraughtsPlayerTest {
         Random random = new Random();
         //Generate our first generation
         if (generateNew) {
-            for (int i = 0; i < generationSize; i++) {
-                //GEN0: Generate random values for everything
-                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50),500+random.nextInt(50000),random.nextInt(6),10-random.nextInt(21),5-random.nextInt(11));
-                newPlayer.generation = 0;
-                Players.add(newPlayer);
+            try {
+                //Write initial generation to file aswell
+                File file = new File(outputFileName + String.valueOf(generation) + ".txt");
+                FileWriter fileWriter = new FileWriter(file);
+                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+                for (int i = 0; i < generationSize; i++) {
+                    //Generate random values for everything
+                    MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50), 500 + random.nextInt(50000), random.nextInt(6), 10 - random.nextInt(21), 5 - random.nextInt(11));
+                    newPlayer.generation = 0;
+                    Players.add(newPlayer);
+                    writePlayerToFile(newPlayer, bufferedWriter);
+                }
+
+                bufferedWriter.flush();
+                bufferedWriter.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         } else {
             try {
@@ -151,6 +147,8 @@ public class MyDraughtsPlayerTest {
                 while ((firstLine = bufferedReader.readLine()) != null) {
                     Players.add(readPlayerFromFile(bufferedReader, firstLine));
                 }
+                assert !Players.isEmpty();
+                generation = Players.get(0).generation;
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
@@ -158,23 +156,7 @@ public class MyDraughtsPlayerTest {
         }
         while (generation < 100) {
             
-            //first write everything to file
-            try {
-            File file = new File(outputFileName+String.valueOf(generation)+".txt");
-            FileWriter fileWriter = new FileWriter(file);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                        
-            for (MyDraughtsPlayer p : Players) {
-                 writePlayerToFile(p, bufferedWriter);
-            }
-            
-            bufferedWriter.flush();
-            bufferedWriter.close();
-            
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println(e.getMessage());
-            }
+
 
             //got list of players: now make them play eachother
             for (int i = 0; i < Players.size(); i++) {
@@ -183,6 +165,7 @@ public class MyDraughtsPlayerTest {
                         MyDraughtsPlayer Player1 = Players.get(i);
                         MyDraughtsPlayer Player2 = Players.get(j);
                         playGame(Player1, Player2);
+                        System.out.println("GAME "+i+" VS "+j+" DONE");
                     }
                 }
             }
@@ -195,13 +178,14 @@ public class MyDraughtsPlayerTest {
                     return p2.fitness - p1.fitness; // Descending
                 }
             });
-            for (int i = (Players.size() / 2); i < Players.size(); i++) {
+            int amountToRemove = Players.size() / 2;
+            for (int i = 0; i < amountToRemove; i++) {
                 System.out.println(Players.get(Players.size() - 1).fitness); //test, should be ascending
                 Players.remove(Players.size() - 1); //remove last element repeatedly until done
             }
 
             //Now add new candidates to play against: Make them random deviations of already exisiting ones 
-            int amountOfNewPlayers = Players.size();
+            int amountOfNewPlayers = generationSize - Players.size();
             for (int i = 0; i < amountOfNewPlayers; i++) {
                 MyDraughtsPlayer oldPlayer = Players.get(i);
                 MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (2 - random.nextInt(5)), oldPlayer.columnValue + (5 - random.nextInt(11)), oldPlayer.splitValue + (2 - random.nextInt(5)));
@@ -209,10 +193,26 @@ public class MyDraughtsPlayerTest {
             }
 
             generation++;
-            //Increase all generations, reset fitness
+            
+            //write everything to file at the end of a generation; the new generation:
+            try {
+            File file = new File(outputFileName+String.valueOf(generation)+".txt");
+            FileWriter fileWriter = new FileWriter(file);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                        
+            //Increase all generations, reset fitness after writing the current fitness to file
             for (MyDraughtsPlayer p : Players) {
-                p.fitness = 0;
                 p.generation = generation;
+                writePlayerToFile(p, bufferedWriter);
+                p.fitness = 0;
+                
+            }
+            bufferedWriter.flush();
+            bufferedWriter.close();
+            
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
         
