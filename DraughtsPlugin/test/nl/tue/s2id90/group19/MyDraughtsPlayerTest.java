@@ -30,7 +30,7 @@ public class MyDraughtsPlayerTest {
     
     /** Scores */
     int winScore = 4;
-    int drawWinScore = 1;
+    int drawWinScore = 0;
     
     /** Time limit per move */
     int timelimit = 2;
@@ -39,7 +39,7 @@ public class MyDraughtsPlayerTest {
     int searchDepth = 4;
     
     int generation = 0;
-    int generationSize = 8;
+    int generationSize = 20;
     
     boolean generateNew = true;
     String readFileName = "machineLearning.txt";
@@ -189,7 +189,7 @@ public class MyDraughtsPlayerTest {
             int amountOfNewPlayers = generationSize - Players.size();
             for (int i = 0; i < amountOfNewPlayers; i++) {
                 MyDraughtsPlayer oldPlayer = Players.get(i);
-                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (2 - random.nextInt(5)), 0, 0);
+                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (1 - random.nextInt(3)), 0, 0);
                 Players.add(newPlayer);
             }
 
