@@ -7,3 +7,5 @@ PlayerStart
 [COLUMNVALUE]
 [SPLITVALUE]
 PlayerEnd
+
+(Clarification: Fitness only applies to top half of the players. Bottom half is 0 since they are players that have just been generated / replaced the bottom half of the generation.)
