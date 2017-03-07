@@ -21,7 +21,7 @@ public class MyDraughtsPlugin extends DraughtsPlayerProvider implements Draughts
         // best player available. For testing it might be handy
         // to make more than one player available.
         super(  new MyExtraDraughtPlayer(4),
-                new MyDraughtsPlayer(4, 43, 6472, 3, 0, 0),
+                new MyDraughtsPlayer(4, new EvaluationWeights(43, 6472, 3, 0, 0)),
                 new UninformedPlayer(5),
                 new OptimisticPlayer(),
                 new BuggyPlayer(5)

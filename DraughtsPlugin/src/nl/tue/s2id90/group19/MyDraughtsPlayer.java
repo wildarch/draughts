@@ -2,10 +2,8 @@ package nl.tue.s2id90.group19;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.MIN_VALUE;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import jdk.nashorn.internal.ir.CallNode;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
@@ -23,9 +21,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     boolean useIterativeDeepening;
     
     //machine learning values
-    private EvaluationWeights evalWeights;
-    public int fitness = 0;
-    public int generation = 0;
+    public EvaluationWeights evalWeights;
     
     int moveStackCounter = 0;
     
@@ -34,12 +30,12 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     
     public MyDraughtsPlayer(int baseSearchDepth, EvaluationWeights weights, 
             boolean enableDeepening) {
-        super("smiley");
+        super("best.png");
         initialize(baseSearchDepth, weights, enableDeepening);
     }
 
     public MyDraughtsPlayer(int searchDepth, EvaluationWeights weights) {
-        super("smiley");
+        super("best.png");
         initialize(searchDepth, weights, false);
         
     }
@@ -234,12 +230,15 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         }
         int score = 0;
         
+        /*
         if (whites+whiteKings == 0) {
             score = -winValue;
         }
         else if (blacks + blackKings == 0) {
             score = winValue;
         }
+        */
+        
         /*
         //Value columns (for building formations) and check for split piece position
         for (int i = 0; i < columnsWhite.length; i++) {
@@ -264,7 +263,7 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         */
            
         score += whites - blacks + 3*(whiteKings - blackKings);
-        returnScore += scoreValue*score + tempiValue*totalTempi;
+        returnScore += evalWeights.piece*score + evalWeights.tempi*totalTempi;
         return returnScore;
     }
 

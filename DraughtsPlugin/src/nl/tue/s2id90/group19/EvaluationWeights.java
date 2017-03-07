@@ -30,6 +30,14 @@ public class EvaluationWeights {
         this.mobility = mobility;
     }
     
+    public EvaluationWeights(int[] weights) {
+        this.piece = weights[0];
+        this.tempi = weights[1];
+        this.balance = weights[2];
+        this.coherence = weights[3];
+        this.mobility = weights[4];
+    }
+    
     /**
      * Creates random (normalised) evaluation weights
      * @return Random evaluation weights
@@ -38,22 +46,30 @@ public class EvaluationWeights {
         Random r = new Random();
         int[] values = r.ints(5).toArray();
         normalize(values);
-        return new EvaluationWeights(
-                values[0], 
-                values[1], 
-                values[2], 
-                values[3], 
-                values[4]
-        );
+        return new EvaluationWeights(values);
     }
     
     public static void normalize(int[] values) {
         int min = Integer.MAX_VALUE;
         for (int v : values) {
-            min = Math.min(v, min);
+            if (v != 0)
+                min = Math.min(v, min);
         }
         for (int i = 0; i < values.length; i++) {
             values[i] /= min;
         }
+    }
+    
+    public int[] getWeights() {
+        return new int[]{piece, tempi, balance, coherence, mobility};
+    }
+    
+    @Override
+    public String toString() {
+        return "Piece:     "+piece + 
+        "\nTempi:     " + tempi +
+        "\nBalance:   " + balance +
+        "\nCoherence: " + coherence +
+        "\nMobility:  " + mobility;
     }
 }
