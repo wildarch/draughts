@@ -9,6 +9,9 @@ import java.util.Random;
  * @author daan
  */
 public class EvaluationWeights {
+    
+    public final static int MAX_WEIGHT = 100;
+    
     //the characteristics of this specific draughtsplayer
     public int piece = 20;
     public int tempi = 1;
@@ -51,12 +54,19 @@ public class EvaluationWeights {
     
     public static void normalize(int[] values) {
         int min = Integer.MAX_VALUE;
-        for (int v : values) {
-            if (v != 0)
-                min = Math.min(v, min);
-        }
         for (int i = 0; i < values.length; i++) {
-            values[i] /= min;
+            int v = values[i];
+            v %= MAX_WEIGHT;
+            if(v < 0)
+                v = -v;
+            
+            if(v != 0)
+                min = Math.min(min, v);
+            values[i] = v;
+        }
+        
+        for (int i = 0; i < values.length; i++) {
+            values[i] = (values[i]) / min;
         }
     }
     
