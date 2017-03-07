@@ -22,11 +22,14 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     boolean useIterativeDeepening;
     
     //the characteristics of this specific draughtsplayer
-    public int scoreValue = 20; //default value
-    public int winValue = 2000; //default value
-    public int columnValue = 0; //default value
-    public int tempiValue = 1; //default value
-    public int splitValue = 0; //default value
+    public int scoreValue = 20; //default values
+    public int winValue = 2000; 
+    public int columnValue = 0;
+    public int tempiValue = 1; 
+    public int splitValue = 0; 
+    public int balanceValue = 0;
+    public int coherenceValue = 0;
+    public int kingValue = 0;
 
     
     //machine learning values
@@ -217,13 +220,18 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
         int whiteKings = 0;
         int blackKings = 0;
         
+        int whiteLeftPieces = 0;
+        int whiteRightPieces = 0;
+        int blackLeftPieces = 0;
+        int blackRightPieces = 0;     
+        
+        int whiteCoherence = 0;
+        int blackCoherence = 0;
+        
         int[] pieces = state.getPieces();
         
         int totalTempi = 0;
         
-        
-        int[] columnsWhite = new int[5];
-        int[] columnsBlack = new int[5];
         
         for(int i = 0; i < pieces.length; i++) {
             int piece = pieces[i];
@@ -231,14 +239,31 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             int column = (i-1) % 5;
             switch(piece) {
                 case DraughtsState.WHITEPIECE:
-                    columnsWhite[column]++;
                     whites++;
                     totalTempi += 10-tempi;
+                    
+                    /* Coherence */
+                    if (tempi != )
+                    
+                    /* Balance */
+                    if (column < 2) {
+                        whiteLeftPieces++;
+                    } else if (column > 2) {
+                        whiteRightPieces++;
+                    }
                     break;
                 case DraughtsState.BLACKPIECE:
-                    columnsBlack[column]++;
                     blacks++;
                     totalTempi -= tempi;
+                    
+                    /* Coherence */
+                    
+                    /* Balance */
+                    if (column < 2) {
+                        blackLeftPieces++;
+                    } else if (column > 2) {
+                        blackRightPieces++;
+                    }
                     break;
                 case DraughtsState.WHITEKING:
                     whiteKings++;
@@ -278,17 +303,19 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
             }
         }
         */
+        
+        int balanceScore = Math.max(blackLeftPieces, blackRightPieces) - Math.min(blackLeftPieces, blackRightPieces) - (Math.max(whiteLeftPieces, whiteRightPieces) - Math.min(whiteLeftPieces, whiteRightPieces));
            
-        score += whites - blacks + 3*(whiteKings - blackKings);
-        returnScore += scoreValue*score + tempiValue*totalTempi;
+        score += whites - blacks +  3*(whiteKings - blackKings);
+        returnScore += scoreValue*score + tempiValue*totalTempi + balanceValue*balanceScore;
         return returnScore;
     }
 
     private boolean isQuiet(DraughtsState state) {
-        for (Move m : state.getMoves()) {
-            if (m.isCapture()) {
-                return false;
-            }
+        List<Move> moves = state.getMoves();
+        
+        if (!moves.isEmpty()) {
+            return !moves.get(0).isCapture();
         }
         return true;
     }
