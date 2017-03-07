@@ -5,21 +5,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import static java.lang.Integer.MAX_VALUE;
-import static java.lang.Integer.MIN_VALUE;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org10x10.dam.game.BoardState;
 import org10x10.dam.game.Move;
 
 /**
@@ -82,15 +78,19 @@ public class MyDraughtsPlayerTest {
     //Plays game where player1 plays vs player2
     private void playGame(MyDraughtsPlayer Player1, MyDraughtsPlayer Player2) {
         int result1 = simulateGame(Player1, Player2);
-        if (result1 == Integer.MAX_VALUE) {
+        switch (result1) {
+        case Integer.MAX_VALUE:
             //White wins:
             Player1.fitness += winScore;
             Player2.fitness -= winScore;
-        } else if (result1 == Integer.MIN_VALUE) {
+            break;
+        case Integer.MIN_VALUE:
             //Black wins:
             Player1.fitness -= winScore;
             Player2.fitness += winScore;
-        } else { //draw
+            break;
+        default:
+            //draw
             if (result1 > 0) {
                 Player1.fitness += drawWinScore;
                 Player2.fitness -= drawWinScore;
@@ -98,7 +98,8 @@ public class MyDraughtsPlayerTest {
                 Player1.fitness -= drawWinScore;
                 Player2.fitness += drawWinScore;
             }
-        }          
+            break;          
+        }
     }
     
 
@@ -196,22 +197,21 @@ public class MyDraughtsPlayerTest {
             generation++;
             
             //write everything to file at the end of a generation; the new generation:
-            try {
             File file = new File(outputFileName+String.valueOf(generation)+".txt");
-            FileWriter fileWriter = new FileWriter(file);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                        
-            //Increase all generations, reset fitness after writing the current fitness to file
-            for (MyDraughtsPlayer p : Players) {
-                p.generation = generation;
-                writePlayerToFile(p, bufferedWriter);
-                p.fitness = 0;
-                
+            FileWriter fileWriter;
+            try {
+                fileWriter = new FileWriter(file);
+                try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+                    //Increase all generations, reset fitness after writing the current fitness to file
+                    for (MyDraughtsPlayer p : Players) {
+                        p.generation = generation;
+                        writePlayerToFile(p, bufferedWriter);
+                        p.fitness = 0;
+                    }
+                    bufferedWriter.flush();
+                }
             }
-            bufferedWriter.flush();
-            bufferedWriter.close();
-            
-            } catch (Exception e) {
+            catch (IOException e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
             }
@@ -229,11 +229,11 @@ public class MyDraughtsPlayerTest {
         try {
             File file = new File("generationtest.txt");
             FileWriter fileWriter = new FileWriter(file);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            writePlayerToFile(player1, bufferedWriter);
-            
-            bufferedWriter.flush();
-            bufferedWriter.close();
+            try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+                writePlayerToFile(player1, bufferedWriter);
+                
+                bufferedWriter.flush();
+            }
             
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
