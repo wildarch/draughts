@@ -5,6 +5,7 @@ import static java.lang.Integer.MIN_VALUE;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import jdk.nashorn.internal.ir.CallNode;
 import nl.tue.s2id90.draughts.DraughtsState;
 import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
@@ -21,15 +22,8 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     int searchDepth;
     boolean useIterativeDeepening;
     
-    //the characteristics of this specific draughtsplayer
-    public int scoreValue = 20; //default value
-    public int winValue = 2000; //default value
-    public int columnValue = 0; //default value
-    public int tempiValue = 1; //default value
-    public int splitValue = 0; //default value
-
-    
     //machine learning values
+    private EvaluationWeights evalWeights;
     public int fitness = 0;
     public int generation = 0;
     
@@ -38,32 +32,22 @@ public class MyDraughtsPlayer  extends DraughtsPlayer{
     /** boolean that indicates that the GUI asked the player to stop thinking. */
     boolean stopped;
     
-    public MyDraughtsPlayer(int baseSearchDepth, boolean enableDeepening) {
+    public MyDraughtsPlayer(int baseSearchDepth, EvaluationWeights weights, 
+            boolean enableDeepening) {
         super("smiley");
-        this.baseSearchDepth = baseSearchDepth;
-        this.useIterativeDeepening = enableDeepening;
-        
-        
+        initialize(baseSearchDepth, weights, enableDeepening);
     }
 
-    public MyDraughtsPlayer(int searchDepth) {
+    public MyDraughtsPlayer(int searchDepth, EvaluationWeights weights) {
         super("smiley");
-        this.baseSearchDepth = searchDepth;
-        this.useIterativeDeepening = false;
+        initialize(searchDepth, weights, false);
         
     }
     
-    public MyDraughtsPlayer(int searchDepth, int scoreValue, int winValue, int tempiValue, int columnValue, int splitValue) {
-        super("smiley");
-        this.baseSearchDepth = searchDepth;
-        this.useIterativeDeepening = false;
-        this.scoreValue = scoreValue;
-        this.winValue = winValue;
-        this.tempiValue = tempiValue;
-        this.columnValue = columnValue;
-        this.splitValue = splitValue;
-
-        
+    private void initialize(int depth, EvaluationWeights weights, boolean itDeep) {
+        this.baseSearchDepth = depth;
+        this.evalWeights = weights;
+        this.useIterativeDeepening = itDeep;
     }
     
     @Override public Move getMove(DraughtsState s) {
