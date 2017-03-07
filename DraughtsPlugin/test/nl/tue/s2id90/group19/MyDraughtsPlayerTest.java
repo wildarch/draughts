@@ -41,7 +41,7 @@ public class MyDraughtsPlayerTest {
     String readFileName = "machineLearning.txt";
     String outputFileName = "generation__";
     
-    ArrayList<MyDraughtsPlayer> Players = new ArrayList<>();
+    ArrayList<Sloeber> Players = new ArrayList<>();
     
     
     
@@ -76,7 +76,7 @@ public class MyDraughtsPlayerTest {
     }
     
     //Plays game where player1 plays vs player2
-    private void playGame(MyDraughtsPlayer Player1, MyDraughtsPlayer Player2) {
+    private void playGame(Sloeber Player1, Sloeber Player2) {
         int result1 = simulateGame(Player1, Player2);
         switch (result1) {
         case Integer.MAX_VALUE:
@@ -105,8 +105,8 @@ public class MyDraughtsPlayerTest {
 
     //@Test
     public void testBeatsExtra() {
-        DraughtsPlayer white = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
-        DraughtsPlayer black = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
+        DraughtsPlayer white = new Sloeber(searchDepth, 20, 2000, 1, 0, 0);
+        DraughtsPlayer black = new Sloeber(searchDepth, 20, 2000, 1, 0, 0);
         int resultGame = simulateGame(white, black);
         System.out.println(resultGame);
         assertTrue(resultGame > 0);
@@ -123,11 +123,11 @@ public class MyDraughtsPlayerTest {
                 File file = new File(outputFileName + String.valueOf(generation) + ".txt");
                 FileWriter fileWriter = new FileWriter(file);
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                MyDraughtsPlayer firstPlayer = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 0, 0);
+                Sloeber firstPlayer = new Sloeber(searchDepth, 20, 2000, 1, 0, 0);
                 Players.add(firstPlayer);
                 for (int i = 1; i < generationSize; i++) {
                     //Generate random values for everything
-                    MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, random.nextInt(50), 500 + random.nextInt(50000), random.nextInt(6), 0, 0);
+                    Sloeber newPlayer = new Sloeber(searchDepth, random.nextInt(50), 500 + random.nextInt(50000), random.nextInt(6), 0, 0);
                     newPlayer.generation = 0;
                     Players.add(newPlayer);
                     writePlayerToFile(newPlayer, bufferedWriter);
@@ -164,8 +164,8 @@ public class MyDraughtsPlayerTest {
             for (int i = 0; i < Players.size(); i++) {
                 for (int j = 0; j < Players.size(); j++) {
                     if (i != j) {
-                        MyDraughtsPlayer Player1 = Players.get(i);
-                        MyDraughtsPlayer Player2 = Players.get(j);
+                        Sloeber Player1 = Players.get(i);
+                        Sloeber Player2 = Players.get(j);
                         playGame(Player1, Player2);
                         System.out.println("GAME "+i+" VS "+j+" DONE");
                     }
@@ -174,9 +174,9 @@ public class MyDraughtsPlayerTest {
 
             //done playing eachother: cut off bottom half
             //sort them by fitness first
-            Collections.sort(Players, new Comparator<MyDraughtsPlayer>() {
+            Collections.sort(Players, new Comparator<Sloeber>() {
                 @Override
-                public int compare(MyDraughtsPlayer p1, MyDraughtsPlayer p2) {
+                public int compare(Sloeber p1, Sloeber p2) {
                     return p2.fitness - p1.fitness; // Descending
                 }
             });
@@ -189,8 +189,8 @@ public class MyDraughtsPlayerTest {
             //Now add new candidates to play against: Make them random deviations of already exisiting ones 
             int amountOfNewPlayers = generationSize - Players.size();
             for (int i = 0; i < amountOfNewPlayers; i++) {
-                MyDraughtsPlayer oldPlayer = Players.get(i);
-                MyDraughtsPlayer newPlayer = new MyDraughtsPlayer(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (1 - random.nextInt(3)), 0, 0);
+                Sloeber oldPlayer = Players.get(i);
+                Sloeber newPlayer = new Sloeber(searchDepth, oldPlayer.scoreValue + (20 - random.nextInt(41)), oldPlayer.winValue + (500 - random.nextInt(1001)), oldPlayer.tempiValue + (1 - random.nextInt(3)), 0, 0);
                 Players.add(newPlayer);
             }
 
@@ -203,7 +203,7 @@ public class MyDraughtsPlayerTest {
                 fileWriter = new FileWriter(file);
                 try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
                     //Increase all generations, reset fitness after writing the current fitness to file
-                    for (MyDraughtsPlayer p : Players) {
+                    for (Sloeber p : Players) {
                         p.generation = generation;
                         writePlayerToFile(p, bufferedWriter);
                         p.fitness = 0;
@@ -224,7 +224,7 @@ public class MyDraughtsPlayerTest {
     
     //@Test
     public void testWriteRead() {
-        MyDraughtsPlayer player1 = new MyDraughtsPlayer(searchDepth, 20, 2000, 1, 4, -2);
+        Sloeber player1 = new Sloeber(searchDepth, 20, 2000, 1, 4, -2);
 
         try {
             File file = new File("generationtest.txt");
@@ -238,7 +238,7 @@ public class MyDraughtsPlayerTest {
             FileReader fileReader = new FileReader(file);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             String firstLine = bufferedReader.readLine();
-            MyDraughtsPlayer player2 = readPlayerFromFile(bufferedReader, firstLine);
+            Sloeber player2 = readPlayerFromFile(bufferedReader, firstLine);
             bufferedReader.close();
             
             
@@ -260,7 +260,7 @@ public class MyDraughtsPlayerTest {
     
     
     
-    public void writePlayerToFile(MyDraughtsPlayer player, BufferedWriter writer) {
+    public void writePlayerToFile(Sloeber player, BufferedWriter writer) {
         //Write all relevant data about a player to a file
         try {
             writer.write("PlayerStart");
@@ -286,7 +286,7 @@ public class MyDraughtsPlayerTest {
         }
     }
     
-    public MyDraughtsPlayer readPlayerFromFile(BufferedReader reader, String firstLine) throws Exception { 
+    public Sloeber readPlayerFromFile(BufferedReader reader, String firstLine) throws Exception { 
         firstLine = reader.readLine();
         if (!firstLine.equals("PlayerStart")) {
             throw new Exception("Reader is not in correct position in file");
@@ -302,7 +302,7 @@ public class MyDraughtsPlayerTest {
         if (!endLine.equals("PlayerEnd")) {
             throw new Exception("End of player not in proper place in file");
         }
-        MyDraughtsPlayer scannedPlayer = new MyDraughtsPlayer(searchDepth, scoreValue, winValue, tempiValue, columnValue, splitValue);
+        Sloeber scannedPlayer = new Sloeber(searchDepth, scoreValue, winValue, tempiValue, columnValue, splitValue);
         scannedPlayer.fitness = fitness;
         scannedPlayer.generation = generation;
         return scannedPlayer;

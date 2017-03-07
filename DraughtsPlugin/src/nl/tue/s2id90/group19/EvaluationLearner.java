@@ -1,9 +1,13 @@
 package nl.tue.s2id90.group19;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 
 /**
  *
@@ -32,10 +36,10 @@ public class EvaluationLearner {
     
     public static void main(String[] args) {
         System.out.println("Starting learning process");
-        EvaluationLearner learner = new EvaluationLearner(50, 4);
+        EvaluationLearner learner = new EvaluationLearner(50, 3);
         System.out.println("Generation 0");
         try {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 long time = System.currentTimeMillis();
                 learner.evolve();
                 long seconds = (System.currentTimeMillis() - time) / 1000;
@@ -45,11 +49,81 @@ public class EvaluationLearner {
         catch (InterruptedException e) {
             System.out.println("The threadpool was interrupted!");
         }
-        System.out.println("Weights from last generation:");
-        for (EvaluationWeights w : learner.population) {
-            System.out.println(w);
-            System.out.println();
+        
+        System.out.println("---------- STAGE 2 ---------");
+        
+        EvaluationLearner learner2 = new EvaluationLearner(20, 4);
+        for(int i = 0; i < learner2.population.length; i++) {
+            learner2.population[i] = learner.population[i];
         }
+        
+        try {
+            for (int i = 0; i < 10; i++) {
+                long time = System.currentTimeMillis();
+                learner2.evolve();
+                long seconds = (System.currentTimeMillis() - time) / 1000;
+                System.out.println("Generation "+(i+1)+" ("+seconds+"s)");
+            }
+        }
+        catch (InterruptedException e) {
+            System.out.println("The threadpool was interrupted!");
+        }
+        
+        
+        System.out.println("---------- STAGE 3 ---------");
+        
+        EvaluationLearner learner3 = new EvaluationLearner(10, 4);
+        for(int i = 0; i < learner3.population.length; i++) {
+            learner3.population[i] = learner2.population[i];
+        }
+        
+        try {
+            for (int i = 0; i < 40; i++) {
+                long time = System.currentTimeMillis();
+                learner3.evolve();
+                long seconds = (System.currentTimeMillis() - time) / 1000;
+                System.out.println("Generation "+(i+1)+" ("+seconds+"s)");
+            }
+        }
+        catch (InterruptedException e) {
+            System.out.println("The threadpool was interrupted!");
+        }
+        
+        System.out.println("Starting death match");
+        EvaluationWeights survivor = learner3.deathMatch();
+        System.out.println("Last standing: \n" + survivor);
+        
+        try {
+            for (int i = 0; i < 40; i++) {
+                long time = System.currentTimeMillis();
+                learner3.evolve();
+                long seconds = (System.currentTimeMillis() - time) / 1000;
+                System.out.println("Generation "+(i+1)+" ("+seconds+"s)");
+            }
+        }
+        catch (InterruptedException e) {
+            System.out.println("The threadpool was interrupted!");
+        }
+        
+        System.out.println("Starting death match");
+        EvaluationWeights survivor2 = learner3.deathMatch();
+        System.out.println("Last standing: \n" + survivor2);
+        
+        try {
+            for (int i = 0; i < 40; i++) {
+                long time = System.currentTimeMillis();
+                learner3.evolve();
+                long seconds = (System.currentTimeMillis() - time) / 1000;
+                System.out.println("Generation "+(i+1)+" ("+seconds+"s)");
+            }
+        }
+        catch (InterruptedException e) {
+            System.out.println("The threadpool was interrupted!");
+        }
+        
+        System.out.println("Starting death match");
+        EvaluationWeights survivor3 = learner3.deathMatch();
+        System.out.println("Last standing: \n" + survivor3);
     }
     
     public void evolve() throws InterruptedException {
@@ -67,6 +141,18 @@ public class EvaluationLearner {
         
         EvaluationWeights[] newPopulation = mate(survivors, population.length);
         population = newPopulation;
+    }
+    
+    public EvaluationWeights deathMatch() {
+        LinkedList<EvaluationWeights> contenders;
+        contenders = new LinkedList<>(Arrays.asList(population));
+        EvaluationWeights best = contenders.pop();
+        while(!contenders.isEmpty()) {
+            EvaluationWeights contender = contenders.pop();
+            Match m = new Match(contender, best, playerSearchDepth);
+            best = m.getWinner();
+        }
+        return best;
     }
     
     static int[] range(int start, int end) {
@@ -110,7 +196,7 @@ public class EvaluationLearner {
     }
     
     /**
-     * Randomly pairs an even number of EvaluationWeightss.
+     * Randomly pairs an even number of EvaluationWeights.
      * @param population
      * @return The matches resulting from the pairing
      */

@@ -6,7 +6,7 @@ package nl.tue.s2id90.group19;
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class MyExtraDraughtPlayer  extends MyDraughtsPlayer {
+public class MyExtraDraughtPlayer  extends Sloeber {
     
     public MyExtraDraughtPlayer(int baseSearchDepth, EvaluationWeights weights, boolean enableDeepening) {
         super(baseSearchDepth, weights, enableDeepening);

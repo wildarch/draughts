@@ -9,13 +9,13 @@ import nl.tue.s2id90.draughts.player.DraughtsPlayer;
 import org10x10.dam.game.Move;
 
 /**
- * Implementation of the DraughtsPlayer interface.
+ * Implementation of the DraughtsPlayer interface, inspired by Kabouter Wesley.
  *
- * @author huub
+ * @author Daan de Graaf & Yoeri Poels
  */
 // ToDo: rename this class (and hence this file) to have a distinct name
 //       for your player during the tournament
-public class MyDraughtsPlayer extends DraughtsPlayer {
+public class Sloeber extends DraughtsPlayer {
 
     private int bestValue = 0;
     int baseSearchDepth;
@@ -33,14 +33,14 @@ public class MyDraughtsPlayer extends DraughtsPlayer {
      */
     boolean stopped;
 
-    public MyDraughtsPlayer(int baseSearchDepth, EvaluationWeights weights,
+    public Sloeber(int baseSearchDepth, EvaluationWeights weights,
             boolean enableDeepening) {
-        super("best.png");
+        super("sloeber.png");
         initialize(baseSearchDepth, weights, enableDeepening);
     }
 
-    public MyDraughtsPlayer(int searchDepth, EvaluationWeights weights) {
-        super("best.png");
+    public Sloeber(int searchDepth, EvaluationWeights weights) {
+        super("sloeber.png");
         initialize(searchDepth, weights, false);
 
     }

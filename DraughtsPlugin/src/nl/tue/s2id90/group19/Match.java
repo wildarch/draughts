@@ -12,8 +12,8 @@ import org10x10.dam.game.Move;
  * @author daan
  */
 public class Match implements Runnable {
-    MyDraughtsPlayer white;
-    MyDraughtsPlayer black;
+    Sloeber white;
+    Sloeber black;
     private MatchResult result;
 
     @Override
@@ -30,8 +30,8 @@ public class Match implements Runnable {
     }
     
     public Match(EvaluationWeights p1, EvaluationWeights p2, int searchDepth) {
-        white = new MyDraughtsPlayer(searchDepth, p1);
-        black = new MyDraughtsPlayer(searchDepth, p2);
+        white = new Sloeber(searchDepth, p1);
+        black = new Sloeber(searchDepth, p2);
     }
     
     public MatchResult getResult() {

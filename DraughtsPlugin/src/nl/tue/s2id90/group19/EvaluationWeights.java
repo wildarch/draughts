@@ -70,6 +70,20 @@ public class EvaluationWeights {
         }
     }
     
+    public static EvaluationWeights average(EvaluationWeights[] population) {
+        int[] weights = new int[population[0].getWeights().length];
+        for(EvaluationWeights w : population) {
+            int[] values = w.getWeights();
+            for(int i = 0; i < weights.length; i++) {
+                weights[i] += values[i];
+            }
+        }
+        for(int i = 0; i < weights.length; i++) {
+            weights[i] /= population.length;
+        }
+        return new EvaluationWeights(weights);
+    }
+    
     public int[] getWeights() {
         return new int[]{piece, tempi, balance, coherence, mobility};
     }
