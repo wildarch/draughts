@@ -35,43 +35,16 @@
 \maketitle
 
 \section{Introduction}
-
-\emph{Give a short introduction on your project: state the objectives
-and comment on how they are achieved. Further more, in the whole document,
-please take care of the following:}
-\begin{itemize}
-\item \emph{Refer to any material you used to obtain your results}, e.g.
-\cite{Ertel:2011:IAI:1971988}\emph{.}
-\item \emph{Illustrate your material with appropriate figures which are
-numbered and have a descriptive caption. Refer to the figure in the
-text: see }Figure \ref{fig:The-winners}\emph{.}
-\begin{figure}[bh]
-\begin{centering}
-\includegraphics[scale=0.07]{IMG_7778.JPG}
-\par\end{centering}
-\emph{\caption{\label{fig:The-winners}The winners of the 2ID90 international draughts
-tournament, edition 2014.}
-}
-
-\end{figure}
-\item \emph{Use pseudo-code to explain your algorithms. Note that pseudo-code
-is not the same as your actual java code. It should be an abstraction
-of that code and should be presented with readability and clarity
-in mind. Pseudo-code has to be accompanied with proper explanation
-and argumentation.}
-\item \emph{Use numbered mathematical formulas instead of lengthy explanations
-in text. Additionally, discuss the principles behind the formula.}
-\end{itemize}
-
-\section{Alpha-Beta }
-
+In this project we explore the creation of an AI (Artificial Intelligence) to play the game of Draughts, on a 10 $\times$ 10 board configuration, which is that of International draughts. We will create a plugin for the Draughts tournament application provided by the Eindhoven University of Technology, which is used to play / simulate Draughts games. Our plugin/player has to try and find the best possible move in a given timeframe. This is done using a minimax algorithm using alpha-beta pruning, and an evaluation function. In this report we will explain our approach for this, extra optimizations added to try and increase its playing capability, and a review of the outcome. 
+\newpage
+\section{Alpha-Beta}
 We made the decision early on to implement alpha-beta pruning in the single method below, in contrast to having two separate methods that are very similar in an effort to reduce code duplication. We added an extra boolean parameter 'maximize' to indicate whether the algorithm should minimize or maximize the evaluation function. 
 We also added a 'depth' parameter to indicate how deep down the tree the algorithm may search. Upon a recursive call the 'maximize' parameter is flipped, and the 'depth' is decreased by 1. If the method is called with depth 0, the heuristic evaluation of the node is returned. 
 We have added one more parameter 'didCapture', which is set to true only if the method was called recursively and in the given node state the previous move was a capture. This is only used to make sure that the best move of node is not set to a move that occurs after a capture, as captures do not count towards the depth. 
 On top of this we also extend the search depth by two layers if the depth reaches 0 on a node that is not quiet.
 The resulting algorithm then becomes:
 
-\begin{algorithm}[h]
+\begin{algorithm}[H]
 \begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
 int AlphaBeta(node, alpha, beta, depth, maximize, didCapture) {
 	// Search up to two extra nodes further if the current node is not quiet
@@ -126,7 +99,7 @@ int AlphaBeta(node, alpha, beta, depth, maximize, didCapture) {
 
 We implement iterative deepening by first running Algorithm \ref{alg:AlphaBeta} with an initial search depth 'baseSearchDepth' and storing this move. Then while we still have time we keep repeating this process with an increasing search depth until the time runs out. When the time runs out the alphaBeta method throws an AIStoppedException, which is caught here and  The algorithm is given by:
 
-\begin{algorithm}[h]
+\begin{algorithm}[H]
 \begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
 Move IterativeDeepening(State s) {
         bestMove = null;
@@ -158,15 +131,15 @@ Move IterativeDeepening(State s) {
 \caption{\label{alg:Iterative}IterativeDeepening}
 \end{algorithm}
 
-
+\newpage
 \section{Evaluation}
 
-Our evaluation of board state \emph{s} is split up in several parts, with each having a different weight. The total evaluation-score is based on an evaluation of the \textbf{amount of pieces and kings}, the \textbf{tempi}, \textbf{balance} and \textbf{coherence} of both sides, and the amount of moves that can be made. \\ \\
+Our evaluation of board state \emph{s} is split up in several parts, with each having a different weight. The total evaluation-score is based on an evaluation of the \textbf{amount of pieces and kings}, the \textbf{tempi}, \textbf{balance} and \textbf{coherence} of both sides, and the \textbf{mobility}. \\ \\
 The score for the amount of pieces/kings \emph{piecesScore} is calculated in the following way:
 \begin{equation}
 piecesScore(s) = (\fullmoon(s) + 3 \cdot \fullmoon king(s)) - (\newmoon(s) + 3 \cdot \newmoon king(s))
 \end{equation}
-where for board state \emph{s}, \fullmoon(s) and \newmoon(s) are the number of white and black pieces, and \fullmoon king(s) and \newmoon king(s) are the number of white and black kings, respectively.\\ We use this to evaluate since having more pieces / the opponents losing pieces means you are more likely to win, as you lose when you do not have any pieces left. \\ \\
+where for board state \emph{s}, \fullmoon(s) and \newmoon(s) are the number of white and black pieces, and \fullmoon king(s) and \newmoon king(s) are the number of white and black kings, respectively.\\ Kings are given a value of 3 because this is generally accepted to be its value relative to normal pieces$^[1]$. \\ We use $piecesScore$ since having more pieces / the opponent losing pieces means you are more likely to win, since the end goal is the opponent having no pieces left, and having more pieces puts you in a stronger position to take capture their pieces and win. \\ \\
 The score for the tempi of both sides \emph{tempiScore} is calculated in the following way: 
 \begin{equation}
 tempiScore(s) = whiteTempi(s) - blackTempi(s) \\
@@ -176,7 +149,7 @@ where \emph{whiteTempi} and \emph{blackTempi} are the following:\\
 	\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4]
 	int whiteTempi(State s) {
 		whiteTempi = 0;
-		for (every white piece in state s) 
+		for (every white piece in state s) { 
 			whiteTempi = whiteTempi + distance from white piece to bottom row (in number of rows);
 		}
 		return whiteTempi;
@@ -184,7 +157,7 @@ where \emph{whiteTempi} and \emph{blackTempi} are the following:\\
 	
 	int blackTempi(State s) {
 		blackTempi = 0;
-		for (every black piece in state s) 
+		for (every black piece in state s) {
 			blackTempi = blackTempi + distance from black piece to top row (in number of rows);
 		}
 		return blackTempi;
@@ -200,26 +173,63 @@ An example of whiteTempi (total value being 23) is shown in Figure \ref{fig:Whit
 	}
 \end{figure}
 
-
-	Give a clear explanation of your evaluation function. Compare
-alternative evaluation strategies, alternative parameter settings,
-etcetera. Argue why you have chosen a particular evaluation function:
-make measurements and use graphs and tables where necessary. Use formulas
-(like (\ref{eq:Hs})\emph{) or pseudo-code:
+We use this to give extra value to pieces closer to the other side, because it's more likely to become a king when it's closer. \\ \\
+The score for balance, \emph{balanceScore}, is calculated in the following way: \\ \\
 \begin{equation}
-H(s)=\begin{cases}
-\infty & \fullmoon(s)=0\\
--\infty & \newmoon(s)=0\\
-\fullmoon(s)-\newmoon(s) & otherwise
-\end{cases},\label{eq:Hs}
+balanceScore(s) = blackUnbalance(s) - whiteUnbalance(s)
 \end{equation}
-where for board state $s$, $\fullmoon(s)$ and $\newmoon(s)$ are
-the number of white and black pieces, respectivily.}
+Where blackUnbalance(s) and whiteUnbalance(s) are the amount of pieces it has more on one side, than on the other side: $|$amount of pieces in two leftmost columns $-$ amount pieces in two rightmost columns$|$ (amount of pieces being only black pieces in blackUnbalance(s), and white in whiteUnbalance(s), respectively). An example of this is in figure \ref{fig:Balance}.
+\begin{figure}[!h]
+	\begin{centering}
+		\includegraphics[scale=0.35]{balance_both.png}
+		\par\end{centering}
+	\emph{\caption{\label{fig:Balance}Balance evaluation}
+	}
+\end{figure}
+As seen in this figure, on the left side of the board there are 3 white pieces, on the right side there are also 3 white pieces. This makes the \emph{whiteUnbalance(s)} = $|3-3|=0$ (blackUnbalance(s) has the exact same score / calculation in this figure). \\
+We use this because it values having a balanced state on your side, which should protect against breakthroughs from the other side $^[1]$, which leads to that side getting a king. \\ \\
+The score of the coherence of a side, $coherenceScore$, is calculated based on the neighbours of all pieces. Every piece gets a point for a neighbour, and also gets points for being at an edge of the board (since this functions similarly to having a neighbour there). The total calculation is then simply the following:
+\begin{equation}
+coherenceScore(s) = whiteCoherence(s) - blackCoherence(s)
+\end{equation}
+whiteCoherence and blackCoherence are then calculated the following way: \\
+\begin{algorithm}[!h]
+	\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4]
+	int whiteCoherence(State s) {
+		whiteCoherence = 0;
+		for (every white piece in state s) {
+			whiteCoherence = whiteCoherence + amount of white pieces/sides surrounding this piece;
+		}
+		return whiteCoherence;
+	}
+	
+	int blackCoherence(State s) {
+		blackCoherence = 0;
+		for (every black piece in state s) {
+			blackCoherence = blackCoherence + amount of black pieces/sides surrounding this piece;
+		}
+		return blackCoherence;
+	}
+	\end{lstlisting}
+\end{algorithm}
+\\An example of blackCoherence is shown in Figure \ref{fig:BlackCoherence}, (resulting in blackCoherence(s) = 16). 
+\begin{figure}[!h]
+	\begin{centering}
+		\includegraphics[scale=0.35]{coherence_black.png}
+		\par\end{centering}
+	\emph{\caption{\label{fig:BlackCoherence}An example of blackCoherence}
+	}
+\end{figure}
+\\ We use coherenceScore since it gives an idea of how well pieces are grouped together, and how well they are protected: Since a piece cannot be captured if it has a 'neighbouring' piece in the direction of the (attempted) capture, having a high coherenceScore makes the pieces 'safer'. \\ \\
+The \emph{mobilityScore} is simply the amount of possible moves in that state. We use this to evaluate since having a higher mobility, more moves available, means there are still more options open, more control over the game for the player, which can aid in winning the game. \\ \\
+All these different scores will have to be combined into one final score to evaluate a state, using different weights for the scores. The final score will then be: \\
+$score(s) = w_{1} \cdot piecesScore(s) + w_{2} \cdot tempiScore(s) + w_{3} \cdot balanceScore(s) + w_{4} \cdot coherenceScore(s) + w_{5} \cdot mobilityScore(s)$. \\
+To figure out if all pieces of the evaluation function worked properly they were enabled one by one (given a weight $\neq 0$) and tested against a previous version. Every time a new function was enabled it beat the old version. We ended up with the following weights: $w_{1} = 80, w_{2} = 4, w_{3} = 4, w_{4} = 4, w_{5} = 1$. However these weights were still rough guesses so machine learning was used to find better weights. \\
+In every generation of our machine learning algorithm all 'versions' of the draughts player were matched with another one, to create a match. The winners of the matches were then crossed over and mutated for the next generation. This was done for roughly 80 generations of 50 elements. At the end these players played a 'death match' versus eachother, a knockout bracket to determine the strongest player. We then also tested this player against the player we made ourselves, and it beat our old player aswell. So we went with the outcome of the machine learning as our final player. The score evaluation for this, and our final player is: \\
+$score(s) = 60 \cdot piecesScore(s) + 6 \cdot tempiScore(s) + 11 \cdot balanceScore(s) + 1 \cdot coherenceScore(s) + 3 \cdot mobilityScore(s)$.
 
 \section{Custom extensions}
-
-We have handled quiescence in Algorithm \ref{alg:AlphaBeta}, where at depth 0 we also check if the board state is currently quiet. If it is we return the heuristic evaluation of the node, otherwise we allow the search to continue up to 2 levels further in the tree. to check if a state is quiet we use the following simple algorithm:
-
+We have handled quiescence in Algorithm \ref{alg:AlphaBeta}, where at depth 0 we also check if the board state is currently quiet. If it is we return the heuristic evaluation of the node, otherwise we allow the search to continue op to 2 levels further in the tree. To check if a state is quiet we use the following simple algorithm:
 \begin{algorithm}[h]
 \begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
 Move IsQuiet(State s) {
@@ -239,7 +249,7 @@ We also ignore obliged moves in the search depth, as can be seen on line 9-10 of
 
 These extensions did make the AI stronger, but only slightly. When an otherwise identical version without these modifications (A) plays against the version with these extensions (B), A will draw B when A is white. But when B is white, it will win by a slight edge it has with the extensions. This is most visible in the end game:
 
-\begin{figure}[bh]
+\begin{figure}[H]
 	\begin{centering}
 		\includegraphics[scale=0.35]{extensions1.png}
 		\par\end{centering}
@@ -247,7 +257,7 @@ These extensions did make the AI stronger, but only slightly. When an otherwise 
 	}
 \end{figure}
 
-\begin{figure}[bh]
+\begin{figure}[H]
 	\begin{centering}
 		\includegraphics[scale=0.35]{extensions2.png}
 		\par\end{centering}
@@ -255,7 +265,7 @@ These extensions did make the AI stronger, but only slightly. When an otherwise 
 	}
 \end{figure}
 
-\begin{figure}[bh]
+\begin{figure}[H]
 	\begin{centering}
 		\includegraphics[scale=0.35]{extensions.png}
 		\par\end{centering}
@@ -263,36 +273,28 @@ These extensions did make the AI stronger, but only slightly. When an otherwise 
 	}
 \end{figure}
 
-\section{Results}
 
-\emph{If you did not do so already in the previous sections, you can
-show your final results here. Again you can use graphs and tables
-to show your point.}
 
-\section{Conclusions}
+\section{Results and Conclusions}
 
-\emph{A short logical summing up of the main reported results.}
+The resulting evaluation function (with weights determined by machine learning) as mentioned in section 4 is the following: \\ $score(s) = 60 \cdot piecesScore(s) + 6 \cdot tempiScore(s) + 11 \cdot balanceScore(s) + 1 \cdot coherenceScore(s) + 3 \cdot mobilityScore(s)$. This evaluation function was used as an evaluation for our implementation of minimax with Alpha-beta pruning, using iterative deepening and checking for quiet moves and ignoring obliged moves in the search depth, as extensions. The resulting player was quite strong, neither of us could come close to beating the player, but we are also not Draughts experts. The big test was the draughts tournament. The player ended up going 4-3 (wins-losses) in our pool, leaving us in 3rd place. We think the biggest weaknesses of our player was its lack of checking for certain patterns, possibly not being efficient enough (so other players could search deeper in the tree to find a better move), and the fact that it only played against variations of our player in the machine learning process, leading to overfitting$^{[2]}$ of the parameters.
 
 \section{Contributions}
-
-\emph{A statement on the contributions of each of the authors.}
 
 \begin{tabular}{|c|c|c|c|}
 \cline{2-4} 
 \multicolumn{1}{c|}{} & \textbf{implementation} & \textbf{documentation} & \textbf{total \#hours}\tabularnewline
 \hline 
-Author 1 & 60\% & 30\% & 30\tabularnewline
+Daan de Graaf & 60\% & 40\% & 28\tabularnewline
 \hline 
-Author 2 & 40\% & 70\% & 25\tabularnewline
+Yoeri Poels & 40\% & 60\% & 26\tabularnewline
 \hline 
 \end{tabular}
-\begin{itemize}
-\item \emph{At least the given columns in the table need to be filled in,
-add columns if needed.}
-\item \emph{Add comments to clarify your table entries when necessary.}
-\item \emph{...}
-\end{itemize}
 \bibliographystyle{plain}
-\bibliography{references}
 
+\newpage
+
+\section*{References}
+[1] Wieger Wesselink (2017). Computer draughts evaluation. Eindhoven University of Technology.
+\\{}[2] Martha K. Smith (2014-06-13). "Overfitting". University of Texas at Austin.
 \end{document}
