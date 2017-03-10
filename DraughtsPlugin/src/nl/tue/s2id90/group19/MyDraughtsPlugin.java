@@ -17,8 +17,8 @@ public class MyDraughtsPlugin extends DraughtsPlayerProvider implements Draughts
         // During the final competition you should make only your 
         // best player available. For testing it might be handy
         // to make more than one player available.
-        super(  new Sloeber(4, new EvaluationWeights(80, 4, 4, 1, 0), true)
-                //, new MyExtraDraughtPlayer(4, new EvaluationWeights(20, 1, 0, 0, 0), true),
+        super(  new Sloeber(4, new EvaluationWeights(60, 6, 11, 1, 3), true)
+//                , new MyExtraDraughtPlayer(4, new EvaluationWeights(60, 6, 11, 1, 3), true)
         );
     }
 }
