@@ -32,7 +32,7 @@
 \title{2ID90 International Draught assignment\\
 \emph{template report} }
 
-\author{Group 19: Yoeri Poels, Daan de Graaf}
+\author{Group XY: <name of author1>, <name of author2>}
 \maketitle
 
 \section{Introduction}
@@ -66,8 +66,6 @@ in text. Additionally, discuss the principles behind the formula.}
 
 \section{Alpha-Beta }
 
-
-
 \emph{Give a full discussion of how you have implemented and extended
 the basic alpha-beta algorithm. Write your algorithms in pseudo-code,
 together with proper explanation and argumentation. Don't forget to
@@ -96,11 +94,51 @@ and argumentation for it.}
 
 \section{Evaluation}
 
-\emph{Give a clear explanation of your evaluation function. Compare
+Our evaluation of board state \emph{s} is split up in several parts, with each having a different weight. The total evaluation-score is based on an evaluation of the \textbf{amount of pieces and kings}, the \textbf{tempi}, \textbf{balance} and \textbf{coherence} of both sides, and the amount of moves that can be made. \\ \\
+The score for the amount of pieces/kings \emph{piecesScore} is calculated in the following way:
+\begin{equation}
+piecesScore(s) = (\fullmoon(s) + 3 \cdot \fullmoon king(s)) - (\newmoon(s) + 3 \cdot \newmoon king(s))
+\end{equation}
+where for board state \emph{s}, \fullmoon(s) and \newmoon(s) are the number of white and black pieces, and \fullmoon king(s) and \newmoon king(s) are the number of white and black kings, respectively.\\ We use this to evaluate since having more pieces / the opponents losing pieces means you are more likely to win, as you lose when you do not have any pieces left. \\ \\
+The score for the tempi of both sides \emph{tempiScore} is calculated in the following way: 
+\begin{equation}
+tempiScore(s) = whiteTempi(s) - blackTempi(s) \\
+\end{equation}
+where \emph{whiteTempi} and \emph{blackTempi} are the following:\\
+\begin{algorithm}[h]
+	\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4]
+	int whiteTempi(State s) {
+		whiteTempi = 0;
+		for (every white piece in state s) 
+			whiteTempi = whiteTempi + distance from white piece to bottom row (in number of rows);
+		}
+		return whiteTempi;
+	}
+	
+	int blackTempi(State s) {
+		blackTempi = 0;
+		for (every black piece in state s) 
+			blackTempi = blackTempi + distance from black piece to top row (in number of rows);
+		}
+		return blackTempi;
+	}
+	\end{lstlisting}
+\end{algorithm} \\
+An example of whiteTempi (total value being 23) is shown in Figure \ref{fig:WhiteTempi}: 
+\begin{figure}[bh]
+	\begin{centering}
+		\includegraphics[scale=0.35]{tempi_white.png}
+		\par\end{centering}
+	\emph{\caption{\label{fig:WhiteTempi}An example of whiteTempi}
+	}
+\end{figure}
+
+
+	Give a clear explanation of your evaluation function. Compare
 alternative evaluation strategies, alternative parameter settings,
 etcetera. Argue why you have chosen a particular evaluation function:
 make measurements and use graphs and tables where necessary. Use formulas
-(like }(\ref{eq:Hs})\emph{) or pseudo-code:
+(like (\ref{eq:Hs})\emph{) or pseudo-code:
 \begin{equation}
 H(s)=\begin{cases}
 \infty & \fullmoon(s)=0\\
