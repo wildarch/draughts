@@ -18,7 +18,7 @@ public class MyDraughtsPlugin extends DraughtsPlayerProvider implements Draughts
         // best player available. For testing it might be handy
         // to make more than one player available.
         super(  new Sloeber(4, new EvaluationWeights(60, 6, 11, 1, 3), true)
-//                , new MyExtraDraughtPlayer(4, new EvaluationWeights(60, 6, 11, 1, 3), true)
+                , new MyExtraDraughtPlayer(4, new EvaluationWeights(60, 6, 11, 1, 3), true)
         );
     }
 }

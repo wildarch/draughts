@@ -29,10 +29,9 @@
 
 \begin{document}
 
-\title{2ID90 International Draught assignment\\
-\emph{template report} }
+\title{2ID90 International Draught assignment}
 
-\author{Group XY: <name of author1>, <name of author2>}
+\author{Group 19: Daan de Graaf, Yoeri Poels}
 \maketitle
 
 \section{Introduction}
@@ -66,31 +65,99 @@ in text. Additionally, discuss the principles behind the formula.}
 
 \section{Alpha-Beta }
 
-\emph{Give a full discussion of how you have implemented and extended
-the basic alpha-beta algorithm. Write your algorithms in pseudo-code,
-together with proper explanation and argumentation. Don't forget to
-refer to them: e.g. see }Algorithm \ref{alg:AlphaBetaMin}\emph{.}
+We made the decision early on to implement alpha-beta pruning in the single method below, in contrast to having two separate methods that are very similar in an effort to reduce code duplication. We added an extra boolean parameter 'maximize' to indicate whether the algorithm should minimize or maximize the evaluation function. 
+We also added a 'depth' parameter to indicate how deep down the tree the algorithm may search. Upon a recursive call the 'maximize' parameter is flipped, and the 'depth' is decreased by 1. If the method is called with depth 0, the heuristic evaluation of the node is returned. 
+We have added one more parameter 'didCapture', which is set to true only if the method was called recursively and in the given node state the previous move was a capture. This is only used to make sure that the best move of node is not set to a move that occurs after a capture, as captures do not count towards the depth. 
+On top of this we also extend the search depth by two layers if the depth reaches 0 on a node that is not quiet.
+The resulting algorithm then becomes:
 
 \begin{algorithm}[h]
-\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4]
-int AlphaBetaMin(node, alpha, beta) {
-	while (NewNodes not empty)  /* loop over all children of node */
-		...
-		alpha := Maximum(alpha, Alpha ...) /* recursive call */
-		if (alpha >= beta) return beta;
-		...	
+\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
+int AlphaBeta(node, alpha, beta, depth, maximize, didCapture) {
+	// Search up to two extra nodes further if the current node is not quiet
+	if ((depth <= 0 && isQuiet(node)) || depth <= -2)	 { return Evaluate(node); }
+	int bestValue = maximize ? $\infty$ : $-\infty$;
+	
+	for (move : PossibleMoves(node) {
+		node.doMove(move);	// Apply this move so we can evaluate the state
+		int newDepth;
+		if (move.isCapture()) {
+			newDepth = depth; // Do not count captures in the search depth	
+		} else {
+			newDepth = depth - 1;
+		}
+	
+		int value = AlphaBeta(node, alpha, beta, newDepth, !maximize, m.isCapture());
+		if (maximize && value >= bestValue) {
+			bestValue = value;
+			if (depth == searchDepth && !didCapture) {
+				// We are at the root of the search tree
+				node.setBestMove(move);				
+			}
+			
+			if (bestValue >= beta) {
+				node.undoMove(move); // Undo move for clean return
+				return bestValue;
+			}
+		}
+		else if (!maximize && value <= bestValue) {
+			bestValue = value;
+			if (depth == searchDepth && !didCapture) {
+				node.setBestMove(move);			
+			}
+			
+			if (bestValue <= alpha) {
+				node.undoMove(move);
+				return bestValue;			
+			}
+		}
+		node.undoMove(move); // Undo the move so we can reuse the node for the next iteration of the loop		
+	}
+	return bestValue;
+	
 }
 \end{lstlisting}
 
-\caption{\label{alg:AlphaBetaMin}AlphaBetaMin}
+\caption{\label{alg:AlphaBeta}AlphaBeta}
 \end{algorithm}
 
 
 \section{Iterative Deepening}
 
-\emph{Give a full discussion of how you have implemented iterative
-deepening. Pseudo-code has to be given, as well as a proper explanation
-and argumentation for it.}
+We implement iterative deepening by first running Algorithm \ref{alg:AlphaBeta} with an initial search depth 'baseSearchDepth' and storing this move. Then while we still have time we keep repeating this process with an increasing search depth until the time runs out. When the time runs out the alphaBeta method throws an AIStoppedException, which is caught here and  The algorithm is given by:
+
+\begin{algorithm}[h]
+\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
+Move IterativeDeepening(State s) {
+        bestMove = null;
+        try {
+            node = new Node(s.clone());
+            
+            // Set to initial search depth
+            searchDepth = baseSearchDepth;
+            // Loop while not interrupted
+            while (true) {
+                bestValue = alphaBeta(node, $-\infty$, $\infty$, searchDepth, s.isWhiteToMove(), false);
+                bestMove = node.getBestMove();
+                if ((bestValue == MAX_VALUE && s.isWhiteToMove())
+                        || (bestValue == MIN_VALUE && !s.isWhiteToMove())) {
+                    // We have a winning strategy
+                    break;
+                }
+
+                searchDepth++; // Increase the search depth for the next iteration
+            }
+
+        } catch (AIStoppedException ex) {
+        		// Our time is up, return the best move according to the highest search depth reached
+	        	return bestMove;
+        }
+}
+\end{lstlisting}
+
+\caption{\label{alg:Iterative}IterativeDeepening}
+\end{algorithm}
+
 
 \section{Evaluation}
 
@@ -151,13 +218,50 @@ the number of white and black pieces, respectivily.}
 
 \section{Custom extensions}
 
-\emph{Several extensions for alpha-beta, iterative deepening, and
-evaluation exist; for example: move ordering, handling quiescence,
-ignoring obliged moves on search depth, and transposition table. Each
-implemented extension needs to be clearly documented and its effect
-should be proven, e.g. by comparing implementations with and without
-the extension using e.g. graphs or tables, featuring, for instance,
-'max search depth', and '\#wins'.}
+We have handled quiescence in Algorithm \ref{alg:AlphaBeta}, where at depth 0 we also check if the board state is currently quiet. If it is we return the heuristic evaluation of the node, otherwise we allow the search to continue up to 2 levels further in the tree. to check if a state is quiet we use the following simple algorithm:
+
+\begin{algorithm}[h]
+\begin{lstlisting}[language=Java,numbers=left,numberstyle={\footnotesize},stepnumber=2,basicstyle={\scriptsize},tabsize=4, mathescape=true]
+Move IsQuiet(State s) {
+        moves = s.getMoves();
+        if (moves.isEmpty()) {
+        		// No pieces are left on the board
+        		return true;
+        	}
+        return !moves.get(0).isCapture();
+}
+\end{lstlisting}
+
+\caption{\label{alg:Iterative}IsQuiet}
+\end{algorithm}
+
+We also ignore obliged moves in the search depth, as can be seen on line 9-10 of Algorithm. \ref{alg:AlphaBeta}.
+
+These extensions did make the AI stronger, but only slightly. When an otherwise identical version without these modifications (A) plays against the version with these extensions (B), A will draw B when A is white. But when B is white, it will win by a slight edge it has with the extensions. This is most visible in the end game:
+
+\begin{figure}[bh]
+	\begin{centering}
+		\includegraphics[scale=0.35]{extensions1.png}
+		\par\end{centering}
+	\emph{\caption{The game is nearly tied in piece count and the two kings suggest a draw outcome}
+	}
+\end{figure}
+
+\begin{figure}[bh]
+	\begin{centering}
+		\includegraphics[scale=0.35]{extensions2.png}
+		\par\end{centering}
+	\emph{\caption{A is to move and has to strike the king and another piece, allowing B to capture the king and force A to put its last piece in harms way.}
+	}
+\end{figure}
+
+\begin{figure}[bh]
+	\begin{centering}
+		\includegraphics[scale=0.35]{extensions.png}
+		\par\end{centering}
+	\emph{\caption{B wins by exploring further}
+	}
+\end{figure}
 
 \section{Results}
 

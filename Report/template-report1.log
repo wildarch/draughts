@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Arch Linux) (preloaded format=pdflatex 2016.11.28)  26 FEB 2017 21:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016/Arch Linux) (preloaded format=pdflatex 2016.11.28)  10 MAR 2017 18:37
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -211,7 +211,11 @@ File: listings.cfg 2015/06/04 1.6 listings configuration
 ))
 Package: listings 2015/06/04 1.6 (Carsten Heinz)
 
-No file template-report1.aux.
+(./template-report1.aux
+
+LaTeX Warning: Label `alg:Iterative' multiply defined.
+
+)
 \openout1 = `template-report1.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 30.
@@ -226,6 +230,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 30.
 LaTeX Font Info:    ... okay on input line 30.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 30.
 LaTeX Font Info:    ... okay on input line 30.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 
@@ -324,54 +329,94 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \c@lstlisting=\count120
-LaTeX Font Info:    Try loading font information for U+wasy on input line 36.
+LaTeX Font Info:    Try loading font information for U+wasy on input line 35.
 
 (/usr/share/texmf-dist/tex/latex/wasysym/uwasy.fd
 File: uwasy.fd 2003/10/30 v2.0 Wasy-2 symbol font definitions
 )
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 44.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 43.
 
 (/usr/share/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 44.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 43.
 
 
 LaTeX Warning: Citation `Ertel:2011:IAI:1971988' on page 1 undefined on input l
-ine 45.
-
-
-LaTeX Warning: Reference `fig:The-winners' on page 1 undefined on input line 48
-.
+ine 44.
 
 <IMG_7778.JPG, id=1, 3276.24pt x 2457.18pt>
 File: IMG_7778.JPG Graphic file (type jpg)
  <use IMG_7778.JPG>
-Package pdftex.def Info: IMG_7778.JPG used on input line 51.
+Package pdftex.def Info: IMG_7778.JPG used on input line 50.
 (pdftex.def)             Requested size: 229.36023pt x 172.02017pt.
-
-
-LaTeX Warning: Reference `alg:AlphaBetaMin' on page 1 undefined on input line 7
-2.
 
 (/usr/share/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-LaTeX Font Info:    Font shape `OMS/cmr/m/it' in size <7> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 77.
- [1
+Overfull \hbox (18.43532pt too wide) in paragraph at lines 114--115
+[][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][
+][][][][] 
+ []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./IMG_7778.JPG>]
 
-LaTeX Warning: Reference `eq:Hs' on page 2 undefined on input line 101.
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 164--166
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 168--171
+
+ []
+
+<tempi_white.png, id=14, 351.3125pt x 361.35pt>
+File: tempi_white.png Graphic file (type png)
+ <use tempi_white.png>
+Package pdftex.def Info: tempi_white.png used on input line 197.
+(pdftex.def)             Requested size: 122.96121pt x 126.4744pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
 
 
 LaTeX Font Warning: Font shape `U/wasy/m/it' undefined
-(Font)              using `U/wasy/m/n' instead on input line 110.
+(Font)              using `U/wasy/m/n' instead on input line 217.
 
+[2]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[3 <./tempi_white.png>] <extensions1.png, id=32, 455.7025pt x 453.695pt>
+File: extensions1.png Graphic file (type png)
+
+<use extensions1.png>
+Package pdftex.def Info: extensions1.png used on input line 244.
+(pdftex.def)             Requested size: 159.49826pt x 158.79562pt.
+ <extensions2.png, id=33, 445.665pt x 447.6725pt>
+File: extensions2.png Graphic file (type png)
+
+<use extensions2.png>
+Package pdftex.def Info: extensions2.png used on input line 252.
+(pdftex.def)             Requested size: 155.98508pt x 156.68771pt.
+ <extensions.png, id=34, 447.6725pt x 446.66875pt>
+File: extensions.png Graphic file (type png)
+
+<use extensions.png>
+Package pdftex.def Info: extensions.png used on input line 260.
+(pdftex.def)             Requested size: 156.68771pt x 156.3364pt.
+ [4 <./extensions1.png> <./extensions2.png>]
 No file template-report1.bbl.
-[2] (./template-report1.aux)
+[5 <./extensions.png>] (./template-report1.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -379,17 +424,17 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 LaTeX Warning: There were undefined references.
 
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 5235 strings out of 493013
- 67545 string characters out of 6139316
- 167495 words of memory out of 5000000
- 8693 multiletter control sequences out of 15000+600000
- 17773 words of font info for 46 fonts, out of 8000000 for 9000
+ 5305 strings out of 493013
+ 68513 string characters out of 6139316
+ 217290 words of memory out of 5000000
+ 8757 multiletter control sequences out of 15000+600000
+ 17086 words of font info for 45 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 40i,7n,42p,248b,1313s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 40i,7n,42p,433b,1289s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/t
 exmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/font
 s/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public
@@ -403,12 +448,11 @@ usr/share/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf
 -dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf-dist/fonts/typ
 e1/public/cm-super/sfrm1728.pfb></usr/share/texmf-dist/fonts/type1/public/cm-su
 per/sfti0700.pfb></usr/share/texmf-dist/fonts/type1/public/cm-super/sfti1000.pf
-b></usr/share/texmf-dist/fonts/type1/public/cm-super/sfti1728.pfb></usr/share/t
-exmf-dist/fonts/type1/public/wasy2-ps/wasy10.pfb>
-Output written on template-report1.pdf (2 pages, 1573166 bytes).
+b></usr/share/texmf-dist/fonts/type1/public/wasy2-ps/wasy10.pfb>
+Output written on template-report1.pdf (5 pages, 1665058 bytes).
 PDF statistics:
- 81 PDF objects out of 1000 (max. 8388607)
- 58 compressed objects within 1 object stream
+ 95 PDF objects out of 1000 (max. 8388607)
+ 62 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 

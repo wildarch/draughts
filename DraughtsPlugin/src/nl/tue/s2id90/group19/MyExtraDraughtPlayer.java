@@ -1,5 +1,7 @@
 package nl.tue.s2id90.group19;
 
+import org10x10.dam.game.Move;
+
 /**
  * Implementation of the DraughtsPlayer interface.
  * @author huub
